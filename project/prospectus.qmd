@@ -7,12 +7,15 @@ format: pdf
 
 ## Background
 
-1. summary of robust methods to obtain covariance matrix
-2. summary of alignment
+One important assumption of using psychological scales to compare groups or select individuals is that these scales perform equivalently across people with different backgrounds. 
+
+1.  summary of robust methods to obtain covariance matrix
+
+
 
 ## The Current Study
 
-We will develop a 
+We will develop a
 
 ### Paper or Presentation
 
@@ -20,10 +23,17 @@ The results of this study will be shared with class in presentation.
 
 ## Method
 
-1. robust covariance matrix
-2. robust parameter estimates
-3. robust alignment
-2. data
+1.  robust covariance matrix
+
+The second step is to apply the alignment optimization on the obtained robust covariance matrix. This could be achieved by first fitting a confirmatory factor analysis (CFA) model using the robust covariance matrix, obtaining robust parameter estimates (e.g., factor loadings, intercepts) from the fitted model, and then conducting alignment on these estimates. 
+
+Here the component loss function $f$, can be set as $f(x) = \sqrt{\sqrt{x^2 + \epsilon}}$ with $\epsilon$ being a small number (i.e., 0.0001). 
+
+\begin{align}
+    F &= \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\lambda_{jk1,1} -\lambda_{jk2,1}) \\ &+ \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\nu_{jk1,1} -\nu_{jk2,1}) 
+\end{align}
+
+4.  data
 
 ## OSF Repository
 
