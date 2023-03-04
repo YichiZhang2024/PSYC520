@@ -1,8 +1,22 @@
 ---
-title: "PSYC 520 Prospectus"
+title: "Prospectus"
 author: "Yichi, Lai"
-date: "`r Sys.Date()`"
+bibliography: references.bib
 format: pdf
 ---
 
-This is a file for robust alignment.
+## Background
+
+## The Current Study
+
+### Paper or Presentation
+
+The results of this study will be shared with class in presentation.
+
+## Method
+
+## OSF Repository
+
+The data analytic scripts and supplemental materials for this project will be available at 
+
+## Reference
