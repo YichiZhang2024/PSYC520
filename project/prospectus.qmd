@@ -1,0 +1,6 @@
+---
+title: "PSYC 520 Prospectus"
+author: "Yichi, Lai"
+date: "`r Sys.Date()`"
+format: pdf
+---
