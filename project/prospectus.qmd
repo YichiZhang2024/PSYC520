@@ -7,7 +7,12 @@ format: pdf
 
 ## Background
 
+1. summary of robust methods to obtain covariance matrix
+2. summary of alignment
+
 ## The Current Study
+
+We will develop a 
 
 ### Paper or Presentation
 
@@ -15,8 +20,13 @@ The results of this study will be shared with class in presentation.
 
 ## Method
 
+1. robust covariance matrix
+2. robust parameter estimates
+3. robust alignment
+2. data
+
 ## OSF Repository
 
-The data analytic scripts and supplemental materials for this project will be available at 
+The data analytic scripts and supplemental materials for this project will be available at https://osf.io/c6u32/?view_only=f0073b5f714c43e7becede0714e35447
 
 ## Reference
