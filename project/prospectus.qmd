@@ -12,7 +12,7 @@ format: pdf
 
 ## The Current Study
 
-We will develop a 
+We will develop a robust estimate
 
 ### Paper or Presentation
 
