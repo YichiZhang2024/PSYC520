@@ -15,7 +15,11 @@ One important assumption of using psychological scales to compare groups or sele
 
 ## The Current Study
 
+<<<<<<< HEAD
 We will develop a
+=======
+We will develop a robust estimate
+>>>>>>> f966db5fcd4b7d5a07abeb777720882785608d5b
 
 ### Paper or Presentation
 
