@@ -7,19 +7,18 @@ format: pdf
 
 ## Background
 
-One important assumption of using psychological scales to compare groups or select individuals is that these scales perform equivalently across people with different backgrounds. 
+Educational or psychological researchers are often interested in assessing people's latent traits that are not directly observable (i.e., self-efficacy). One commonly used assessment method is to develop psychological scales and ask people to rate the scale items. However, an important assumption of using psychological scales is measurement invariance (MI), meaning the scales have the same measurement properties for people from different groups. By establishing MI, researchers could compare latent means across groups while holding measurement parameters invariant. However, exact invariance is often rejected in applied research, so the alignment optimization has been proposed to accurately estimate the latent trait means without requiring the exact invariance across groups [@asparouhov2014]. 
 
-1.  summary of robust methods to obtain covariance matrix
+<!-- Specifically, alignment automates the MI analysis by minimizing a loss function that captures the amount of measurement noninvariance across items and groups -->
+
+However, alignment is based on multiple-group confirmatory factor analysis (MG-CFA), which is not robust to outliers or influential observations......[Lai: add the part about robust covariance matrix]
 
 
 
 ## The Current Study
 
-<<<<<<< HEAD
-We will develop a
-=======
-We will develop a robust estimate
->>>>>>> f966db5fcd4b7d5a07abeb777720882785608d5b
+We will develop a robust 
+
 
 ### Paper or Presentation
 
