@@ -11,7 +11,7 @@ Educational or psychological researchers are often interested in assessing peopl
 
 <!-- Specifically, alignment automates the MI analysis by minimizing a loss function that captures the amount of measurement noninvariance across items and groups -->
 
-However, alignment is based on multiple-group confirmatory factor analysis (MG-CFA), which is not robust to outliers or influential observations......[Lai: add the part about robust covariance matrix]
+However, alignment is based on multiple-group confirmatory factor analysis (MG-CFA), in which the variance-covariance matrix and correlations are involved for the calculation of such procedure. It is well-known that the traditional measures of scatter matrix and covariance are sensitive to outliers. The breakdown point of the sample covariance matrix is only 1/n [@wilcox2017modern]. That is, even a single outlier can substantially alter the values of estimates. In multivariate analyses such as CFA, defining, identifying and categorizing outliers are nontrivial. Given the nature of CFA - parallel to regression, outliers can be classified into three categories: leverage points, outliers and influential points. Influential points will be the focus for our current project since inclusion/exclusion will have a great effect on the assessment of the model fit [@yuan20088]. 
 
 ## The Current Study
 
