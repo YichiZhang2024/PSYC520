@@ -23,7 +23,7 @@ The results of this study will be shared with class in presentation.
 
 ## Method
 
-1.  robust covariance matrix (Lai)
+The first step is to identify and categorize above-mentioned three type of data contamination. Methods using distances to measure how far an observation is from the center of the data cloud will allow us to achieve this purpose. Mahalanobis distance [@mahalanobis1936generalised] (MD) is one of them. However, the classic MD technique is not robust against outliers since it uses sample mean and covariance matrix. Robust estimates of location and scatter, such as Minimum Covariance Determinant [@rousseeuw1999fast] and Minimum Volume Ellipsoid [@rousseeuw1985multivariate] will be used to replace sample mean and covariance matrix in MD to calculate observations' distances. Once different types of data contamination are identified, Huber-type weights will be assigned to these data points, aiming to minimize their impact on model fit.
 
 The second step is to apply the alignment optimization on the obtained robust covariance matrix. This could be achieved by first fitting a confirmatory factor analysis (CFA) model using the robust covariance matrix, obtaining robust parameter estimates (e.g., factor loadings, intercepts) from the fitted model, and then conducting alignment on these estimates. 
 
