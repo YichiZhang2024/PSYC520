@@ -1,0 +1,106 @@
+---
+title             : "Robust Alignment Optimization for Approximate Invariance"
+shorttitle        : "RAO"
+
+author: 
+  - name          : "Lai Xu"
+    affiliation   : "1"
+    corresponding : no    # Define only one corresponding author
+    address       : "Department Psychology, University of Southern California, "
+    email         : "laixu@usc.edu"
+
+  - name          : "Yichi Zhang"
+    affiliation   : "1"
+    corresponding : yes    # Define only one corresponding author
+    address       : "Department Psychology, University of Southern California, "
+    email         : "yzhang97@usc.edu"
+
+affiliation       :
+  - id            : "1"
+    institution   : "University of Southern California"
+ 
+keywords: "measurement invariance, alignment, robust statistics"
+bibliography: ["RAO.bib"]
+floatsintext: no
+figurelist: no
+tablelist: no
+footnotelist: no
+linenumbers: no
+mask: no
+draft: no
+biblio-style: "apa"
+documentclass: "apa7"
+classoption: "man"
+output: 
+  papaja::apa6_pdf:
+    # citation_package: biblatex
+    includes:
+      in_header: "preamble.tex"
+header-includes   :
+  - \usepackage{newtxmath}
+  - \let\lambda\uplambda
+  - \let\gamma\upgamma
+---
+
+```{r setup, include = FALSE}
+library("papaja")
+library("dplyr")
+library("gtools")
+library("ggplot2")
+library("haven")
+library("psych")
+library("lavaan")
+library("tidyverse")
+library("knitr")
+library("kableExtra")
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r apa_numbers, include = FALSE}
+# including 0 when a number can exceed 1
+apa_round <- function(x) {
+  round(x, 2)
+}
+# excluding 0 when a number cannot exceed 1
+apa_decimal <- function(x) {
+  rounded <- round(x, 2)*1e2
+  if (abs(rounded) < 10) {
+    noquote(paste0(".0", rounded))
+  } else {
+    noquote(paste0(".", rounded))
+  }
+}
+```
+
+
+```{r child='Introduction.Rmd'}
+
+```
+
+# Methods
+
+```{r child ='methods.Rmd'}
+
+```
+
+# Illustrative Example
+
+```{r child='example.Rmd'}
+
+```
+
+# Discussion
+
+```{r child='discussion.Rmd'}
+
+```
+
+\newpage
+
+# References
+
+::: {#refs custom-style="Bibliography"}
+:::
+
+\setlength{\parindent}{-0.5in}
+\setlength{\leftskip}{0.5in}
