@@ -53,6 +53,13 @@ library("lavaan")
 library("tidyverse")
 library("knitr")
 library("kableExtra")
+library("modelsummary")
+library("matlib")
+library("foreach")
+library("DetMCD")
+library("sirt")
+source("../analysis/functions_class.R")
+source("../analysis/Rallfun-v39")
 knitr::opts_chunk$set(echo = TRUE)
 ```
 

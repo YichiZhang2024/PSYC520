@@ -1,0 +1,90 @@
+```{r, include = FALSE}
+source("analysis.R")
+```
+
+### Descriptives
+
+We demonstrated RAO on the classic @holzinger1939 dataset. To better illustrate the result of RAO, we manually added five leverage points following the procedure described in @yuan2013. The original dataset was proposed to investigate the mental ability test scores of seventh- and eighth-grade students from two schools. The modified dataset only used students from one school (Grant-White). After modification, this dataset has a sample size of 145 students (72 female and 73 male). The goal of this empirical example is to test measurement invariance of the spatial ability scale across gender. 
+
+!! ADD A PARAGRAPH DESCRIBING THE PROCEDURE OF ADDING LEVERAGE POINTS!!
+
+A one-factor CFA model with three items was fit to the dataset using the *lavaan* R package [@R-lavaan], $\chi^2(df = 6) = 70.660$. Since it is a saturated model, model fit statistics such as RMSEA and CFI are not available. We described the procedure of RAO in detail below.
+
+### Robust Alignment Optimization (RAO) 
+
+#### Step 1: Computing Distances
+
+
+
+#### Step 2: Reweighting the Covariance Matrix
+
+```{r cov, echo = FALSE, results="asis"}
+cov_tab %>%
+  papaja::apa_table(
+    align = "lcccc",    
+    escape = FALSE,
+    col_spanners = list("Original Data" = c(2, 4), 
+                        "MD with MVE" = c(5, 7),
+                        "MD with MCD" = c(8, 10),
+                        "PMVE (random)" = c(11, 13),
+                        "PMCD (random)" = c(14, 16),
+                        "PMVE (exhaustive)" = c(17, 19),
+                        "PMCD (exhaustive)" = c(20, 22)),
+    digits = 2,
+    font_size = "scriptsize",
+    landscape = TRUE,
+    longtable = TRUE,
+    note = paste("MD means mahalanobis distance; PMVE means projection method with MVE; PMCD means projection method with MCD"),
+    caption = "Covariance Matrix From Original Data and From RAO"
+  )
+```
+
+(ref:cov) Covariance Matrix From Original Data and From RAO.
+
+#### Step 3: Applying the Alignment Optimization
+
+We then applied alignment on the obtained robust covariance matrices from step 2. Specifically, alignment was conducted using the *sirt* R package [@R-sirt]. The default `FIXED` option was used so that the SD of of female was fixed to 1. See Table\ \@ref(tab:mvar) for aligned factor means and variances from different methods. Since female is the reference group, we fixed the factor mean and factor variance to 0 and 1 correspondingly. Male has a lower latent spatial ability than female, with factor means ranging from `r range(round(m_var_tab[,2],2))[1]` to `r range(round(m_var_tab[,2],2))[2]`). 
+
+Table\ \@ref(tab:alignpar) showed the aligned factor loadings and intercepts from RAO. 
+
+```{r mvar, echo = FALSE, results="asis"}
+m_var_tab %>%
+  papaja::apa_table(
+    align = "lcccc",
+    caption = "Aligned Factor Means and Variances From RAO",
+    digits = 2,
+    col_spanners = list("Factor Means" = c(2, 3), 
+                        "Factor Variances" = c(4, 5)),
+    note = paste("MD means mahalanobis distance; PMVE means projection method with MVE; PMCD means projection method with MCD"),
+    escape = FALSE,
+    # font_size = "scriptsize",
+    # landscape = TRUE,
+    # longtable = TRUE,
+    # merge_method = "table_spanner"
+  )
+```
+(ref:mcd) Aligned Factor Means and Variances From RAO.
+
+```{r alignpar, echo = FALSE, results="asis"}
+align_param %>%
+  papaja::apa_table(
+    align = "lcccc",
+    caption = "Aligned Factor Loadings and Intercepts From RAO",
+    digits = 2,
+    col_spanners = list("Original Data" = c(2, 4), 
+                        "MD with MVE" = c(5, 7),
+                        "MD with MCD" = c(8, 10),
+                        "PMVE (random)" = c(11, 13),
+                        "PMCD (random)" = c(14, 16),
+                        "PMVE (exhaustive)" = c(17, 19),
+                        "PMCD (exhaustive)" = c(20, 22)),
+    note = paste("MD means mahalanobis distance; PMVE means projection method with MVE; PMCD means projection method with MCD"),
+    escape = FALSE,
+    font_size = "scriptsize",
+    landscape = TRUE,
+    longtable = TRUE,
+    merge_method = "table_spanner"
+  )
+```
+
+(ref:alignpar) Aligned Factor Loadings and Intercepts From RAO.
