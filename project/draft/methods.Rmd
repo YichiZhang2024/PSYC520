@@ -1,0 +1,22 @@
+## Mahalanobas Distance
+
+## Huber type weight
+
+## Alignment 
+
+\begin{align}
+\lambda_{jk,1} &= \frac{\lambda_{jk,0}}{\sqrt{\psi_k}}\\
+\psi_{jk,1} &= \nu_{jk,0} - \alpha_k \frac{\lambda_{jk,0}}{\sqrt{\psi_k}}
+\end{align}
+
+\begin{align}
+F &= \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\lambda_{jk1,1} -\lambda_{jk2,1}) \\ &+ \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\nu_{jk1,1} -\nu_{jk2,1}) 
+\end{align}
+
+## Steps for RAO
+
+Step 1: Computing Distances
+
+Step 2: Reweighting the Covariance Matrix
+
+Step 3: Applying the Alignment Optimization

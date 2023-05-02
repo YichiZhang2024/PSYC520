@@ -8,6 +8,13 @@ We start the paper with an overview of measurement invariance literature and the
 
 ## Alignment
 
+## Traditional Approaches 
+
+The proposed method situates in the multiple-group confirmatory analysis (MG-CFA; Joreskog, 1971) framework.[^irt] Assume one latent construct is measured by $p$ continuous indicators for $K$ groups. The single factor MG-CFA model can be expressed in the following form,
+$$y_{ik} = \tau_k + \lambda_k\eta_{ik} + \epsilon_{ik}.$$
+Here $y_{ik}$ and $\eta_{ik}$ are the observed continuous response and the latent trait score for the $i$th person in the $k$th group. The three other model parameters are $\tau_k$, the intercepts, $\lambda_k$, the factor loadings, and $\epsilon_{ik}$, the unique factor variables. The above model assumes $\epsilon_{ik}$ follows a multivariate normal distribution with a mean vector of 0 and a variance-covariance matrix that holds the local independence assumption. 
+
+
 ## Outliers and Leverage Points
 
 ## Robust methods in SEM
