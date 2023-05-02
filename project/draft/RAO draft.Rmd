@@ -73,7 +73,7 @@ apa_decimal <- function(x) {
 ```
 
 
-```{r child='Introduction.Rmd'}
+```{r child='introduction.Rmd'}
 
 ```
 

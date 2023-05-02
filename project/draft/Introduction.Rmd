@@ -1,0 +1,19 @@
+Educational or psychological researchers are often interested in assessing people's latent traits that are not directly observable (i.e., self-efficacy). One commonly used assessment method is to develop psychological scales and ask people to rate the scale items. An important assumption of using psychological scales is measurement invariance (MI), meaning the scales have the same measurement properties for people from different groups. By establishing MI, researchers could compare latent means across groups while holding measurement parameters invariant. However, exact invariance (i.e., absolute equivalence in parameter estimates) is often rejected in applied research, so the alignment optimization has been proposed to accurately estimate the latent trait means without requiring the exact invariance across groups [@asparouhov2014]. 
+
+<!-- Specifically, alignment automates the MI analysis by minimizing a loss function that captures the amount of measurement noninvariance across items and groups -->
+
+However, alignment is based on multiple-group confirmatory factor analysis (MG-CFA), in which the variance-covariance matrix and correlations are involved for the calculation of such procedure. It is well-known that the traditional measures of scatter matrix and covariance are sensitive to outliers or data contamination. There are some existing robust estimation methods in structural equation models (SEM), such as the two-stage robust method by @yuan1998a, the direct robust method by @yuan2008, and multivariate-t based SEM by @yuan1998b. However, these robust methods have not been used together with alignment. Thus, the current study propose the robust alignment optimization (RAO) as an alternative to downweigh the impact of data contamination. 
+
+We start the paper with an overview of measurement invariance literature and the alignment optimization. Next, we discuss the existing robust estimation methods in SEM. Then we described the proposed RAO methods in detail. Finally, an illustrative example is included to demonstrate the effectiveness of RAO. We end the paper with a discussion on advantages of the proposed method, as well as limitations and future directions.  
+
+## Alignment
+
+## Outliers and Leverage Points
+
+## Robust methods in SEM
+
+<!-- The breakdown point of the sample covariance matrix is only 1/n [@wilcox2017modern]. That is, even a single outlier can substantially alter the values of estimates. In multivariate analyses such as CFA, defining, identifying and categorizing data contamination are nontrivial. Given the nature of CFA - parallel to regression, data contamination can be classified into three general categories: leverage points (good and bad), outliers and influential points. Influential points will be the focus for our current project since their inclusion/exclusion will have a great impact on the assessment of the model fit [@yuan2008].  -->
+
+## The Current Study
+
+To our knowledge, there is no discussion on robustness of alignment. Thus, we will develop a robust alignment optimization that could produce consistent and efficient estimation with the existence of outliers or influential observations. 
