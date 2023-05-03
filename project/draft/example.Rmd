@@ -46,9 +46,9 @@ Table\ \@ref(tab:cov) showed the covariance matrix from the original @holzinger1
 
 #### Stage 2: Apply Alignment on the Robust Covariance Matrix
 
-We then applied alignment on the obtained robust covariance matrices from step 2. Specifically, alignment was conducted using the *sirt* R package [@R-sirt]. The default `FIXED` option was used so that the SD of of female was fixed to 1. See Table\ \@ref(tab:mvar) for aligned factor means and variances from different methods. Since female is the reference group, we fixed the factor mean and factor variance to 0 and 1 correspondingly. Male has a lower latent spatial ability than female, with factor means ranging from `r range(round(m_var_tab[,2],2))[1]` to `r range(round(m_var_tab[,2],2))[2]`). 
+We then applied alignment on the obtained robust covariance matrices from step 2. Specifically, alignment was conducted using the *sirt* R package [@R-sirt]. The default `FIXED` option was used so that the SD of of female was fixed to 1. See Table\ \@ref(tab:mvar) for aligned factor means and variances from different methods. Since female is the reference group, we fixed the factor mean and factor variance to 0 and 1 correspondingly. Male has a lower latent spatial ability than female, with factor means ranging from `r range(round(m_var_tab[,2],2))[1]` to `r range(round(m_var_tab[,2],2))[2]`). The Projection Distance with MVE using random fixed point method provided the closest estimates of factor means and variances to the original dataset. 
 
-Table\ \@ref(tab:alignpar) showed the aligned factor loadings and intercepts from RAO. 
+Table\ \@ref(tab:alignpar) showed the aligned factor loadings and intercepts from RAO. Consistent with previous result, the Projection Distance with random fixed point methods performed the best in recovering aligned factor loadings and intercepts estimates. In this case, MCD and MVE generated the same results after rounding to two decimal points. Mahalanobis Distance with MCD and MVE also gave acceptable parameter estimates, even though their performances were less ideal than the project distance with random fixed points approaches. Projection Distance using exhaustive search methods generated acceptable estimates for intercepts but not for factor loadings.
 
 ```{r mvar, echo = FALSE, results="asis"}
 m_var_tab %>%
