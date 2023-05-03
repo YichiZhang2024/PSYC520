@@ -6,34 +6,46 @@ However, alignment is based on multiple-group confirmatory factor analysis (MG-C
 
 We start the paper with an overview of measurement invariance literature and the alignment optimization. Next, we discuss the existing robust estimation methods in SEM. Then we described the proposed RAO methods in detail. Finally, an illustrative example is included to demonstrate the effectiveness of RAO. We end the paper with a discussion on advantages of the proposed method, as well as limitations and future directions.  
 
-## Alignment
+## Measurement Invariance
 
-## Traditional Approaches 
+Measurement invariance (MI) holds when individuals with the same level of the latent construct have similar performances on the scale regardless of their group membership [@meredith1993]. If the scale consistently gives higher scores for individuals from one group than the other groups, then the scale violates MI (also called measurement noninvariance). It is an essential assumption for applied researchers to confidently conclude that the observed group differences are due to differences in the latent construct instead of the bias inherent in scale items. One common framework to test MI is the confirmatory factor analysis framework (CFA) [@joreskog1971]. Assume one latent construct is measured by $p$ continuous indicators for $K$ groups. The single factor MG-CFA model can be expressed in the following form,
+\begin{equation}
+y_{ik} = \tau_k + \lambda_k\eta_{ik} + \epsilon_{ik}. (\#eq:fa)
+\end{equation}
+Here $y_{ik}$ and $\eta_{ik}$ are the observed continuous response and the latent construct score for the $i$th person in the $k$th group. The three other model parameters are the intercepts, $\nu_k$, factor loadings, $\lambda_k$, and the unique factor variables, $\epsilon_{ik}$. The above model assumes $\epsilon_{ik}$ follows a multivariate normal distribution with a mean vector of 0 and a variance-covariance matrix $\Theta_{ik}$, which is a diagonal matrix that holds the local independence assumption. 
 
-The proposed method situates in the multiple-group confirmatory analysis (MG-CFA; Joreskog, 1971) framework.[^irt] Assume one latent construct is measured by $p$ continuous indicators for $K$ groups. The single factor MG-CFA model can be expressed in the following form,
-$$y_{ik} = \tau_k + \lambda_k\eta_{ik} + \epsilon_{ik}.$$
-Here $y_{ik}$ and $\eta_{ik}$ are the observed continuous response and the latent trait score for the $i$th person in the $k$th group. The three other model parameters are $\tau_k$, the intercepts, $\lambda_k$, the factor loadings, and $\epsilon_{ik}$, the unique factor variables. The above model assumes $\epsilon_{ik}$ follows a multivariate normal distribution with a mean vector of 0 and a variance-covariance matrix that holds the local independence assumption. 
+Four levels of invariance have been widely used in existing literature [@meredith1992]. First, configural invariance assumes the same factor structure across groups. Second, metric/weak invariance requires the equality of factor loadings across groups. Third, scalar/strong invariance requires the equality of intercepts across groups in addition to factor loadings. Lastly, strict invariance requires equality of intercepts or thresholds, factor loadings and unique factor variances across groups. 
+
+The equality/invariance of model parameters across groups can be tested by comparing nested models, which means one model with equality constraints of a particular parameter and the other without such constraints. For example, the invariance of intercepts can be tested by comparing the model with freely estimated intercepts and another model that has equality constraints of intercepts across groups. Traditionally, the tenability of the equality constraints is tested by the likelihood ratio test (LRT) or modification indices under NHST [@steiger1985;@shi2019a]. With assumptions of multivariate normality and the null hypothesis of absolute equivalence of model parameters, the likelihood ratio chi-square difference between the nested models follows a central chi-square distribution with degrees of freedom (df) equal to the difference in number of free parameters between models [@shi2019a]. If the test is statistically significant, then the null hypothesis is rejected and researchers could conclude the tested parameter is noninvariant. 
+
+### Alignment
+
+LRT has several limitations. First, it can be time-consuming when the number of group is large [@asparouhov2014]. Second, it tests for exact invariance, which is often violated in applied research. Therefore, @asparouhov2014 proposed the alignment optimization, which simplified the MI testing procedure by using approximate invariance parameter estimates instead of the exact MI results. Alignment has been found to perform well in recovering parameter estimates when the amount of noninvariance is small [@flake2017;@luong2022]. 
+
 
 
 ## Outliers and Leverage Points
-Outliers are observations that do not follow the pattern of the majority of the data. Outliers are common in any data set since they do not need to be unusual observations necessarily, they can simply arise because of measurement errors, misplaced decimal points, sampling errors and so on. Methods to detect outliers in univariate data sets have been well studied. However, it is not trivial to detect outliers in a multivariable data cloud. Since the literature for measurement invariance and alignment is built in the framework of confirmatory analysis, it is important to define different types of outliers as the first step in the context of CFA. Consider a factor analysis model:\
-$\textbf{y} = \mu + \Lambda\xi + \epsilon$ \
-where $\textbf{y}$ is a vector of $p$ manifest variables, $\mu$ is the vector of population means, $\Lambda$ is a $p \times m$ matrix of factor loadings, $\xi$ isa vector of $m$ factors, and $\epsilon$ contains measurement errors or uniqueness. Due to the resemblance between a factor analysis model and a regression model:\
-$\textbf{y} = \beta_{0} + \beta\textbf{X} + \epsilon$ \
+
+Outliers are observations that do not follow the pattern of the majority of the data. Outliers are common in any data set since they do not need to be unusual observations necessarily, they can simply arise because of measurement errors, misplaced decimal points, sampling errors and so on. Methods to detect outliers in univariate data sets have been well studied. However, it is not trivial to detect outliers in a multivariable data cloud. Since the literature for measurement invariance and alignment is built in the framework of confirmatory analysis, it is important to define different types of outliers as the first step in the context of CFA. Consider the factor analysis model described in equation\ \@ref(eq:fa),
+<!-- : -->
+<!-- $$\textbf{y} = \mu + \Lambda\xi + \epsilon$$  -->
+<!-- where $\textbf{y}$ is a vector of $p$ manifest variables, $\mu$ is the vector of population means, $\Lambda$ is a $p \times m$ matrix of factor loadings, $\xi$ isa vector of $m$ factors, and $\epsilon$ contains measurement errors or uniqueness.  -->
+it resembes the regression model:
+$$\textbf{y} = \beta_{0} + \beta\textbf{X} + \epsilon$$ 
 where $\textbf{y}$ is a vector of observed values, $\beta_{0}$ and $\beta$ is the intercept and slope estimates, and $\epsilon$ contains errors, one can regard the factor analysis as a multivariate regression model with latent predictors [@yuan2013]. Thus, the regression model will be used for demonstration of three types of data contamination in a multivariable data set. Leverage points are unusual observation when the dependent variable is ignored, meaning leverage points are outliers among independent variables. Regression outliers refer to observations for
 which their residual are outliers based on a regression line that fits the bulk of the points. Bad leverage points are observations that are identified as leverage points and regression outliers. Similarly, in factor analysis, good leverage observations, which are defined as extreme
 values in factors but small errors or uniquenesses, enlarge the elements of the sample covariance matrix $\textbf{S}$ and implied covariance matrix $\Sigma(\hat{\Theta})$; outliers and bad leverage points, defined as cases that have extreme values in errors regardless
 of the values of the factors, enlarge the elements of S and $\Sigma(\hat{\Theta})$ as well as the residual matrix S - $\Sigma(\hat{\Theta})$; they also result in biased estimates of $\hat{\Lambda}, \hat{\Phi}$ and $\hat{\Psi}$ [@yuan2013].
 
-A classical way to detect leverage observations in multivariate data sets is to use Mahalanobis Distance [@mahalanobis1936generalised], which measures the distance between a point ${\bf x}$ and the sample mean:\
-$d^{2} = ({\bf x}-\bar{\bf X})'{\bf S}^{-1}({\bf x}-\bar{\bf X})$,\
-where $\bar{\bf X}$ is the arithmetic mean of the data set and $\textbf{S}$ is the usual sample covariance matrix. Due to the fact that $\bar{\bf X}$ and $\textbf{S}$ is not robust, detecting outliers with Mahalanobis distance suffers from masking, meaning the failure to detect outliers due to their very presence. Alternatively, the diagonal elements of the hat matrix $\textbf{H}$ = $\bf X(\bf X^{t}X)^{-1}X^{t}$ can  be used to identify leverage points. However, the hat matrix, like the classical Mahalanobis distance, still suffers from masking, which can be explained by the relation between the $h_{ii}$ and the $d_{i}$ of the $\bf {x_{i}}$:\
-$h_{ii} = \frac{d_{i}^{2}}{n-1} + \frac{1}{n}$
+A classical way to detect leverage observations in multivariate data sets is to use Mahalanobis Distance [@mahalanobis1936generalised], which measures the distance between a point ${\bf x}$ and the sample mean:
+$$d^{2} = ({\bf x}-\bar{\bf X})'{\bf S}^{-1}({\bf x}-\bar{\bf X})$$,
+where $\bar{\bf X}$ is the arithmetic mean of the data set and $\textbf{S}$ is the usual sample covariance matrix. Due to the fact that $\bar{\bf X}$ and $\textbf{S}$ is not robust, detecting outliers with Mahalanobis distance suffers from masking, meaning the failure to detect outliers due to their very presence. Alternatively, the diagonal elements of the hat matrix $\textbf{H}$ = $\bf X(\bf X^{t}X)^{-1}X^{t}$ can  be used to identify leverage points. However, the hat matrix, like the classical Mahalanobis distance, still suffers from masking, which can be explained by the relation between the $h_{ii}$ and the $d_{i}$ of the $\bf {x_{i}}$:
+$$h_{ii} = \frac{d_{i}^{2}}{n-1} + \frac{1}{n}$$
 
 Previous literature has suggested to replace the arithmetic mean $\bar{\bf X}$ and sample covariance matrix $\textbf{S}$ with robust estimators. @campbell1980robust proposed to use $\textit{M}$ estimators for $\bar{\bf X}$ and $\textbf{S}$. However, the breakdown point for $\textit{M}$ estimators is at most $1/(p+1)$ [@rousseeuw2011robust]. One can also consider using estimators of multivariate location and covariance that have high break-down point, such as minimum volume ellipsoid (MVE) introduced by @rousseeuw1985multivariate and minimum covariance determinant (MCD) [@rousseeuw1999fast].
 
-Once the robust Mahalanobis distance ($d_{ri}$) for each point is computed, an observation is declared as a leverage point if\
-$d_{ri} > \sqrt{\chi^{2}_{p, .975}}$,\
+Once the robust Mahalanobis distance ($d_{ri}$) for each point is computed, an observation is declared as a leverage point if
+$$d_{ri} > \sqrt{\chi^{2}_{p, .975}}$$,
 where $\chi^{2}_{p, .975}$ is the .975 quantile of a chi-squared distribution with $p$ degrees of freedom.
 
 ## Robust methods in SEM

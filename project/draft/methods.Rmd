@@ -16,7 +16,7 @@ F &= \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\lambda_{jk1,1} -\lambda_{jk2,1}) \\ &+
 ## Steps for RAO
 
 Step 1: Computing Distances
-
+\newline
 Step 2: Reweighting the Covariance Matrix
-
+\newline
 Step 3: Applying the Alignment Optimization
