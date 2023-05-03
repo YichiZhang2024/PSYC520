@@ -2,8 +2,6 @@
 
 ## Huber type weight
 
-## Alignment 
-
 ## Steps for RAO
 
 ## A Two-Stage Procedure
@@ -28,4 +26,4 @@ Step 2: Reweighting the Covariance Matrix
 
 ### Stage 2: Apply Alignment on the Robust Covariance Matrix
 
-The second stage of RAO applies alignment on obtained robust covariance matrix from the first stage. The goal is to 
+The second stage of RAO applies alignment on obtained robust covariance matrix from the first stage. The goal is to find a model that can be used to make accurate factor mean comparisons by searching for factor mean and variance estimates that minimize the total measurement noninvariance while downweighing the impact of influential observations. 
