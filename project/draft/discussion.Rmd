@@ -1,4 +1,5 @@
 1. summary (Yichi)
 2. advantage of the current method (Yichi)
 3. limitation
-4. future direction
+4. future direction  
+In this project, we only modified the data so that it contains leverage observations. To test the full effect of above-mentioned data contamination detection techniques and their corresponding alignment indices, outliers and bad leverage observations are needed to be further studies. We conducted a two-stage robust procedure (TSR) in our study. However, a direct robust method (DR) has also been suggested by @yuan2013, in which distances are directly used in the computation of the robust covariance matrix. Further analyses are needed to compare which method performs better in either stage. Furthermore, a simulation study will be ideal to set a ground truth so one can decide if the data contamination detection techniques are identifying unusual observations as they are supposed to, since we cannot guarantee the original data set that we used are free of such contamination.
