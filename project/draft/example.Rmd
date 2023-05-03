@@ -6,13 +6,13 @@ source("analysis.R")
 
 We demonstrated RAO on the classic @holzinger1939 dataset. To better illustrate the result of RAO, we manually added five leverage points following the procedure described in @yuan2013. The original dataset was proposed to investigate the mental ability test scores of seventh- and eighth-grade students from two schools. The subset dataset only contained students from one school (Grant-White) with a sample size of 145 students (72 female and 73 male). We used the first three variables, which measured the students' spatial ability. The goal of this empirical example is to test measurement invariance of the spatial ability scale across gender.
 
-To examine the effect of leverage observations on aligned estimates, we modified the first dataset by replacing the last five cases as leverage points:\
-$$
-\begin{align}
-y_{i}^{2} = y_{i}, i = 1,2,...,140;\\
+To examine the effect of leverage observations on aligned estimates, we modified the first dataset by replacing the last five cases as leverage points:
+\begin{equation}
+y_{i}^{2} = y_{i}, i = 1,2,...,140;
+\end{equation}
+\begin{equation}
 y_{i}^{2} = y_{i} + h_{i}\hat{\Lambda}\hat{\xi}_{i}, i = 141,...,145,
-\end{align}
-$$
+\end{equation}
 where $\hat{\Lambda}$ is the estimated factor loading matrix, $\hat{\xi}_{i}$ is the resulting barlett factor score predictor, and the five $h_{i}$s are approximately 0.3881, 1.3762, 5.6153, 2.4312, and 1.7442 according to @yuan2013. Thus, $y_{141}$ to $y_{145}$ are considered as leverage points.
 
 A one-factor CFA model with three items was fit to the modified dataset using the *lavaan* R package [@R-lavaan], $\chi^2(df = 6) = 70.660$. Since it is a saturated model, model fit statistics such as RMSEA and CFI are not available. We described the procedure of RAO in detail below.
@@ -21,7 +21,7 @@ A one-factor CFA model with three items was fit to the modified dataset using th
 
 #### Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix
 
-In this example we computed the Mahalanobis Distance and Projection Distance with MVE and MCD as the robust location and scatter estimators. Two versions of Projection Distance was used: random search and exhaustive search. Random search means a random point is selected and used as the fixed point, $X_{i}$, such that all other points will be projected on the line connecting the center and $X_{i}$. In contrast, exhaustive search means the procedure is repeated on all data points (i.e., every point is used as the fixed point to identify the leverage observations). Once the leverage observations are flagged, Huber-Type weights are used to reweight the covariance matrix. In total, we computed six types of robust covariance matrix: Mahalanobis Distance with MVE, Mahalanobis Distance with MCD, Projection Distance with MVE (random), Projection Distance with MCD (random), Projection Distance with MVE (exhaustive), Projection Distance with MCD (exhaustive). The R codes for generating these types of robust covariance matrices can be found at the online Github repository. 
+In this example we computed the Mahalanobis Distance and Projection Distance with MVE and MCD as the robust location and scatter estimators. Two versions of Projection Distance was used: random search and exhaustive search. Random search means a random point is selected and used as the fixed point, $X_{i}$, such that all other points will be projected on the line connecting the center and $X_{i}$. In contrast, exhaustive search means the procedure is repeated on all data points (i.e., every point is used as the fixed point to identify the leverage observations). Once the leverage observations are flagged, Huber-Type weights are used to reweight the covariance matrix. In total, we computed six types of robust covariance matrix: Mahalanobis Distance with MVE, Mahalanobis Distance with MCD, Projection Distance with MVE (random), Projection Distance with MCD (random), Projection Distance with MVE (exhaustive), Projection Distance with MCD (exhaustive). The R codes for generating these types of robust covariance matrices can be found at the online Github repository (https://github.com/YichiZhang2024/PSYC520/tree/main/project). 
 
 ```{r cov, echo = FALSE, results="asis"}
 cov_tab %>%
