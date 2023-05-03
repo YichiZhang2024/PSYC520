@@ -4,9 +4,16 @@ source("analysis.R")
 
 ### Descriptives
 
-We demonstrated RAO on the classic @holzinger1939 dataset. To better illustrate the result of RAO, we manually added five leverage points following the procedure described in @yuan2013. The original dataset was proposed to investigate the mental ability test scores of seventh- and eighth-grade students from two schools. The modified dataset only used students from one school (Grant-White). After modification, this dataset has a sample size of 145 students (72 female and 73 male). The goal of this empirical example is to test measurement invariance of the spatial ability scale across gender. 
+We demonstrated RAO on the classic @holzinger1939 dataset. To better illustrate the result of RAO, we manually added five leverage points following the procedure described in @yuan2013. The original dataset was proposed to investigate the mental ability test scores of seventh- and eighth-grade students from two schools. The subset dataset only contained students from one school (Grant-White) with a sample size of 145 students (72 female and 73 male). We used the first three variables, which measured the students' spatial ability. The goal of this empirical example is to test measurement invariance of the spatial ability scale across gender.
 
-!! ADD A PARAGRAPH DESCRIBING THE PROCEDURE OF ADDING LEVERAGE POINTS!!
+To examine the effect of leverage observations on aligned estimates, we modified the first dataset by replacing the last five cases as leverage points:\
+$$
+\begin{align}
+y_{i}^{2} = y_{i}, i = 1,2,...,140;\\
+y_{i}^{2} = y_{i} + h_{i}\hat{\Lambda}\hat{\xi}_{i}, i = 141,...,145,
+\end{align}
+$$
+where $\hat{\Lambda}$ is the estimated factor loading matrix, $\hat{\xi}_{i}$ is the resulting barlett factor score predictor, and the five $h_{i}$s are approximately 0.3881, 1.3762, 5.6153, 2.4312, and 1.7442 according to @yuan2013. Thus, $y_{141}$ to $y_{145}$ are considered as leverage points.
 
 A one-factor CFA model with three items was fit to the modified dataset using the *lavaan* R package [@R-lavaan], $\chi^2(df = 6) = 70.660$. Since it is a saturated model, model fit statistics such as RMSEA and CFI are not available. We described the procedure of RAO in detail below.
 
