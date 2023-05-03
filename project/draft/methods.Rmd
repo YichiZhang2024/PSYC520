@@ -21,6 +21,25 @@ Once the robust Mahalanobis distance ($d_{ri}$) for each point is computed, an o
 $$d_{ri} > \sqrt{\chi^{2}_{p, .975}}$$,
 where $\chi^{2}_{p, .975}$ is the .975 quantile of a chi-squared distribution with $p$ degrees of freedom.
 
+An alternative method to detect leverage points we considered here is called Projection Distance. Following @wilcox2017introduction, a projection-type method for detecting outliers can be described as follows. Consider a random sample and let $n$ denote the sample size.
+The method begins by finding the center of the data cloud, $\hat{\zeta}$. In this paper, the marginal medians are used for $\hat{\zeta}$. Next, for a fixed point $X_{i}$, project all n points onto the line connecting the center $\hat{\zeta}$ and $X_{i}$.
+The immediate goal is to compute the distance of each of the projected 
+points from $\hat{\zeta}$. Let\
+$$A_{i} = X_{i} - \hat{\zeta}$$,\
+$$B_{j} = X_{j} - \hat{\zeta}$$,\
+where $X_{j}$ are data points other than $X_{i}$,  $A_{i}$ and $B_{j}$ are column vectors having length $p$, and let\
+$$C_{j} = \frac{A_{i}^{'}B_{j}}{B_{j}^{'}B_{j}}B_{j}$$
+$j=1,\ldots,n$. When projecting the points onto the line between $X_{i}$ and $\hat{\zeta}$, the projection distance of the $i$th point from $\hat{\zeta}$ is\
+$$D_{ij} = \|C_{j}\|$$
+where
+    $$||C_{j}\| = \sqrt{C_{j1}^{2} + \ldots + C_{jp}^{2}}$$
+Then, we used ideal fourths as the criterion to check for outliers among the $D_{ij}$ values. The $i$th point is declared an outlier if any of its n projections satisfies\
+$$D_{ij} > M_{D} + \sqrt{\chi^{2}_{0.975,p}}(q_{2}-q_{1})$$
+where $M_{D}$ is the usual sample median based on the $D_{ij}$, and $\chi^{2}_{0.975,p}$ is the 0.975 quantile of a chi-squared distribution with $p$ degrees of freedom. Repeating this process for each $i$, $i = 1, \ldots, n$, a point is declared an outlier if any of these projections satisfies the above criterion.
+
+In this project, we chose MVE and MCD as the robust location and scatter estimators for both Mahalanobis Distance and Projection Distance. 
+
+
 Step 2: Reweighting the Covariance Matrix
 
 
