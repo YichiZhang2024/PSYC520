@@ -18,7 +18,7 @@ $$h_{ii} = \frac{d_{i}^{2}}{n-1} + \frac{1}{n}$$
 Previous literature has suggested to replace the arithmetic mean $\bar{\bf X}$ and sample covariance matrix $\textbf{S}$ with robust estimators. @campbell1980robust proposed to use $\textit{M}$ estimators for $\bar{\bf X}$ and $\textbf{S}$. However, the breakdown point for $\textit{M}$ estimators is at most $1/(p+1)$ [@rousseeuw2011robust]. One can also consider using estimators of multivariate location and covariance that have high break-down point, such as minimum volume ellipsoid (MVE) introduced by @rousseeuw1985multivariate and minimum covariance determinant (MCD) [@rousseeuw1999fast].
 
 Once the robust Mahalanobis distance ($d_{ri}$) for each point is computed, an observation is declared as a leverage point if
-$$d_{ri} > \sqrt{\chi^{2}_{p, .975}}$$,
+$$d_{ri} > \sqrt{\chi^{2}_{p, .975}}$$
 where $\chi^{2}_{p, .975}$ is the .975 quantile of a chi-squared distribution with $p$ degrees of freedom.
 
 An alternative method to detect leverage points we considered here is called Projection Distance. Following @wilcox2017introduction, a projection-type method for detecting outliers can be described as follows. Consider a random sample and let $n$ denote the sample size.
