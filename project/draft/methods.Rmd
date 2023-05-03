@@ -4,15 +4,6 @@
 
 ## Alignment 
 
-\begin{align}
-\lambda_{jk,1} &= \frac{\lambda_{jk,0}}{\sqrt{\psi_k}}\\
-\psi_{jk,1} &= \nu_{jk,0} - \alpha_k \frac{\lambda_{jk,0}}{\sqrt{\psi_k}}
-\end{align}
-
-\begin{align}
-F &= \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\lambda_{jk1,1} -\lambda_{jk2,1}) \\ &+ \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\nu_{jk1,1} -\nu_{jk2,1}) 
-\end{align}
-
 ## Steps for RAO
 
 ## A Two-Stage Procedure
@@ -20,7 +11,6 @@ F &= \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\lambda_{jk1,1} -\lambda_{jk2,1}) \\ &+
 ### Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix
 
 Step 1: Computing Distances
-\newline
 
 A classical way to detect leverage observations in multivariate data sets is to use Mahalanobis Distance [@mahalanobis1936generalised], which measures the distance between a point ${\bf x}$ and the sample mean:
 $$d^{2} = ({\bf x}-\bar{\bf X})'{\bf S}^{-1}({\bf x}-\bar{\bf X})$$,
@@ -34,5 +24,8 @@ $$d_{ri} > \sqrt{\chi^{2}_{p, .975}}$$,
 where $\chi^{2}_{p, .975}$ is the .975 quantile of a chi-squared distribution with $p$ degrees of freedom.
 
 Step 2: Reweighting the Covariance Matrix
-\newline
-Step 3: Applying the Alignment Optimization
+
+
+### Stage 2: Apply Alignment on the Robust Covariance Matrix
+
+The second stage of RAO applies alignment on obtained robust covariance matrix from the first stage. The goal is to 
