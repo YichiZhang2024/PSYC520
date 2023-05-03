@@ -29,7 +29,7 @@ Then, we used ideal fourths as the criterion to check for outliers among the $D_
 $$D_{ij} > M_{D} + \sqrt{\chi^{2}_{0.975,p}}(q_{2}-q_{1})$$
 where $M_{D}$ is the usual sample median based on the $D_{ij}$, and $\chi^{2}_{0.975,p}$ is the 0.975 quantile of a chi-squared distribution with $p$ degrees of freedom. Repeating this process for each $i$, $i = 1, \ldots, n$, a point is declared an outlier if any of these projections satisfies the above criterion.
 
-In this project, we chose MVE and MCD as the robust location and scatter estimators for both Mahalanobis Distance and Projection Distance.
+In this project, we chose MVE and MCD as the robust location and scatter estimators for both Mahalanobis Distance and Projection Distance. Details on MVE and MCD estimators can be found in @wilcox2011introduction.
 
 ### Step 2: Reweighting the Covariance Matrix
 
