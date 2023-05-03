@@ -8,15 +8,13 @@ We demonstrated RAO on the classic @holzinger1939 dataset. To better illustrate 
 
 !! ADD A PARAGRAPH DESCRIBING THE PROCEDURE OF ADDING LEVERAGE POINTS!!
 
-A one-factor CFA model with three items was fit to the dataset using the *lavaan* R package [@R-lavaan], $\chi^2(df = 6) = 70.660$. Since it is a saturated model, model fit statistics such as RMSEA and CFI are not available. We described the procedure of RAO in detail below.
+A one-factor CFA model with three items was fit to the modified dataset using the *lavaan* R package [@R-lavaan], $\chi^2(df = 6) = 70.660$. Since it is a saturated model, model fit statistics such as RMSEA and CFI are not available. We described the procedure of RAO in detail below.
 
 ### Robust Alignment Optimization (RAO) 
 
-#### Step 1: Computing Distances
+#### Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix
 
-
-
-#### Step 2: Reweighting the Covariance Matrix
+In this example we computed the Mahalanobis Distance and Projection Distance with MVE and MCD as the robust location and scatter estimators. Two versions of Projection Distance was used: random search and exhaustive search. Random search means a random point is selected and used as the fixed point, $X_{i}$, such that all other points will be projected on the line connecting the center and $X_{i}$. In contrast, exhaustive search means the procedure is repeated on all data points (i.e., every point is used as the fixed point to identify the leverage observations). Once the leverage observations are flagged, Huber-Type weights are used to reweight the covariance matrix. In total, we computed six types of robust covariance matrix: Mahalanobis Distance with MVE, Mahalanobis Distance with MCD, Projection Distance with MVE (random), Projection Distance with MCD (random), Projection Distance with MVE (exhaustive), Projection Distance with MCD (exhaustive). The R codes for generating these types of robust covariance matrices can be found at the online Github repository. 
 
 ```{r cov, echo = FALSE, results="asis"}
 cov_tab %>%
@@ -24,24 +22,29 @@ cov_tab %>%
     align = "lcccc",    
     escape = FALSE,
     col_spanners = list("Original Data" = c(2, 4), 
-                        "MD with MVE" = c(5, 7),
-                        "MD with MCD" = c(8, 10),
-                        "PMVE (random)" = c(11, 13),
-                        "PMCD (random)" = c(14, 16),
-                        "PMVE (exhaustive)" = c(17, 19),
-                        "PMCD (exhaustive)" = c(20, 22)),
+                        "Modified Data" = c(5, 7),
+                        "MD with MVE" = c(8, 10),
+                        "MD with MCD" = c(11, 13),
+                        "PMVE (random)" = c(14, 16),
+                        "PMCD (random)" = c(17, 19),
+                        "PMVE (exhaustive)" = c(20, 22),
+                        "PMCD (exhaustive)" = c(23, 24)),
     digits = 2,
     font_size = "scriptsize",
     landscape = TRUE,
     longtable = TRUE,
-    note = paste("MD means mahalanobis distance; PMVE means projection method with MVE; PMCD means projection method with MCD"),
+    note = paste("MD means Mahalanobis Distance; PMVE means Projection Distance with MVE; PMCD means Projection Distance with MCD"),
     caption = "Covariance Matrix From Original Data and From RAO"
   )
 ```
 
 (ref:cov) Covariance Matrix From Original Data and From RAO.
 
-#### Step 3: Applying the Alignment Optimization
+Table\ \@ref(tab:cov) showed the covariance matrix from the original @holzinger1939 dataset, the covariance matrix from the modified dataset (with manually added leverage points), as well as the six types of robust covariance matrices described above. As expected, the modified dataset has larger item variances and covariances compared to the original dataset due to the influence of manually added leverage points. Among all methods, Projection Distance and MCD with randomly picked fixed point provides the closest covariance matrix to the original dataset. Project Distance and MVE with random search performed similarly in recovering the original covariance matrix. However, the other four methods provide unsatisfactory results. 
+
+<!-- One potential explanation is these methods are stringent in leverage points identification, so the reweighting process might  -->
+
+#### Stage 2: Apply Alignment on the Robust Covariance Matrix
 
 We then applied alignment on the obtained robust covariance matrices from step 2. Specifically, alignment was conducted using the *sirt* R package [@R-sirt]. The default `FIXED` option was used so that the SD of of female was fixed to 1. See Table\ \@ref(tab:mvar) for aligned factor means and variances from different methods. Since female is the reference group, we fixed the factor mean and factor variance to 0 and 1 correspondingly. Male has a lower latent spatial ability than female, with factor means ranging from `r range(round(m_var_tab[,2],2))[1]` to `r range(round(m_var_tab[,2],2))[2]`). 
 
@@ -55,7 +58,7 @@ m_var_tab %>%
     digits = 2,
     col_spanners = list("Factor Means" = c(2, 3), 
                         "Factor Variances" = c(4, 5)),
-    note = paste("MD means mahalanobis distance; PMVE means projection method with MVE; PMCD means projection method with MCD"),
+    note = paste("MD means Mahalanobis Distance; PMVE means Projection Distance with MVE; PMCD means Projection Distance with MCD"),
     escape = FALSE,
     # font_size = "scriptsize",
     # landscape = TRUE,
@@ -67,24 +70,25 @@ m_var_tab %>%
 
 ```{r alignpar, echo = FALSE, results="asis"}
 align_param %>%
-  papaja::apa_table(
-    align = "lcccc",
-    caption = "Aligned Factor Loadings and Intercepts From RAO",
-    digits = 2,
-    col_spanners = list("Original Data" = c(2, 4), 
-                        "MD with MVE" = c(5, 7),
-                        "MD with MCD" = c(8, 10),
-                        "PMVE (random)" = c(11, 13),
-                        "PMCD (random)" = c(14, 16),
-                        "PMVE (exhaustive)" = c(17, 19),
-                        "PMCD (exhaustive)" = c(20, 22)),
-    note = paste("MD means mahalanobis distance; PMVE means projection method with MVE; PMCD means projection method with MCD"),
-    escape = FALSE,
-    font_size = "scriptsize",
-    landscape = TRUE,
-    longtable = TRUE,
-    merge_method = "table_spanner"
-  )
+    papaja::apa_table(
+        align = "lcccc",
+        caption = "Aligned Factor Loadings and Intercepts From RAO",
+        digits = 2,
+        col_spanners = list("Original Data" = c(2, 4), 
+                            "Modified Data" = c(5, 7),
+                            "MD with MVE" = c(8, 10),
+                            "MD with MCD" = c(11, 13),
+                            "PMVE (random)" = c(14, 16),
+                            "PMCD (random)" = c(17, 19),
+                            "PMVE (exhaustive)" = c(20, 22),
+                            "PMCD (exhaustive)" = c(23, 24)),
+        note = paste("MD means Mahalanobis Distance; PMVE means Projection Distance with MVE; PMCD means Projection Distance with MCD"),
+        escape = FALSE,
+        font_size = "tiny",
+        landscape = TRUE,
+        longtable = TRUE,
+        merge_method = "table_spanner"
+    )
 ```
 
 (ref:alignpar) Aligned Factor Loadings and Intercepts From RAO.

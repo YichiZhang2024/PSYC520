@@ -1,8 +1,6 @@
-## RAO: A Two-Stage Procedure
+## Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix
 
-### Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix
-
-#### Step 1: Computing Distances
+### Step 1: Computing Distances
 
 A classical way to detect leverage observations in multivariate data sets is to use Mahalanobis Distance [@mahalanobis1936generalised], which measures the distance between a point ${\bf x}$ and the sample mean:
 $$d^{2} = ({\bf x}-\bar{\bf X})'{\bf S}^{-1}({\bf x}-\bar{\bf X})$$
@@ -33,7 +31,7 @@ where $M_{D}$ is the usual sample median based on the $D_{ij}$, and $\chi^{2}_{0
 
 In this project, we chose MVE and MCD as the robust location and scatter estimators for both Mahalanobis Distance and Projection Distance.
 
-#### Step 2: Reweighting the Covariance Matrix
+### Step 2: Reweighting the Covariance Matrix
 
 Both of the previously mentioned leverage points detection techniques assign distances to each observation within its data cloud, and the issue with detecting leverage points has now become a unidimensional case. After identifying the leverage points, weights are assigned to their corresponding distances to downplay their effect on the parameter estimation. We considered Huber-Type weights:
 $$
