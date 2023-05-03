@@ -52,7 +52,7 @@ of the values of the factors, enlarge the elements of S and $\Sigma(\hat{\Theta}
 
 ## The Current Study
 
-To our knowledge, there is no discussion on robustness of alignment. Thus, we will develop a robust alignment optimization that could produce consistent and efficient estimation with the existence of outliers or influential observations. 
+To our knowledge, there is no discussion on robustness of alignment. Thus, we developed a robust alignment optimization that could produce consistent and efficient estimation with the existence of outliers or influential observations. 
 
-In this project, we also consider using Projection Method to calculate the distance between each observation and the center of the data cloud. This outlier detection method stands in its own category because it does not require the use of a covariance matrix. More details will be discussed in Method section.
+<!-- In this project, we also consider using Projection Method to calculate the distance between each observation and the center of the data cloud. This outlier detection method stands in its own category because it does not require the use of a covariance matrix. More details will be discussed in Method section. -->
 

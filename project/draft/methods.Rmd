@@ -1,18 +1,12 @@
-## Mahalanobas Distance
-
-## Huber type weight
-
-## Steps for RAO
-
-## A Two-Stage Procedure
+## RAO: A Two-Stage Procedure
 
 ### Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix
 
-Step 1: Computing Distances
+#### Step 1: Computing Distances
 
 A classical way to detect leverage observations in multivariate data sets is to use Mahalanobis Distance [@mahalanobis1936generalised], which measures the distance between a point ${\bf x}$ and the sample mean:
-$$d^{2} = ({\bf x}-\bar{\bf X})'{\bf S}^{-1}({\bf x}-\bar{\bf X})$$,
-where $\bar{\bf X}$ is the arithmetic mean of the data set and $\textbf{S}$ is the usual sample covariance matrix. Due to the fact that $\bar{\bf X}$ and $\textbf{S}$ is not robust, detecting outliers with Mahalanobis distance suffers from masking, meaning the failure to detect outliers due to their very presence. Alternatively, the diagonal elements of the hat matrix $\textbf{H}$ = $\bf X(\bf X^{t}X)^{-1}X^{t}$ can  be used to identify leverage points. However, the hat matrix, like the classical Mahalanobis distance, still suffers from masking, which can be explained by the relation between the $h_{ii}$ and the $d_{i}$ of the $\bf {x_{i}}$:
+$$d^{2} = ({\bf x}-\bar{\bf X})'{\bf S}^{-1}({\bf x}-\bar{\bf X})$$
+where $\bar{\bf X}$ is the arithmetic mean of the data set and $\textbf{S}$ is the usual sample covariance matrix. Due to the fact that $\bar{\bf X}$ and $\textbf{S}$ is not robust, detecting outliers with Mahalanobis distance suffers from masking, meaning the failure to detect outliers due to their very presence. Alternatively, the diagonal elements of the hat matrix $\textbf{H}$ = $\bf X(\bf X^{t}X)^{-1}X^{t}$ can be used to identify leverage points. However, the hat matrix, like the classical Mahalanobis distance, still suffers from masking, which can be explained by the relation between the $h_{ii}$ and the $d_{i}$ of the $\bf {x_{i}}$:
 $$h_{ii} = \frac{d_{i}^{2}}{n-1} + \frac{1}{n}$$
 
 Previous literature has suggested to replace the arithmetic mean $\bar{\bf X}$ and sample covariance matrix $\textbf{S}$ with robust estimators. @campbell1980robust proposed to use $\textit{M}$ estimators for $\bar{\bf X}$ and $\textbf{S}$. However, the breakdown point for $\textit{M}$ estimators is at most $1/(p+1)$ [@rousseeuw2011robust]. One can also consider using estimators of multivariate location and covariance that have high break-down point, such as minimum volume ellipsoid (MVE) introduced by @rousseeuw1985multivariate and minimum covariance determinant (MCD) [@rousseeuw1999fast].
@@ -24,12 +18,12 @@ where $\chi^{2}_{p, .975}$ is the .975 quantile of a chi-squared distribution wi
 An alternative method to detect leverage points we considered here is called Projection Distance. Following @wilcox2017introduction, a projection-type method for detecting outliers can be described as follows. Consider a random sample and let $n$ denote the sample size.
 The method begins by finding the center of the data cloud, $\hat{\zeta}$. In this paper, the marginal medians are used for $\hat{\zeta}$. Next, for a fixed point $X_{i}$, project all n points onto the line connecting the center $\hat{\zeta}$ and $X_{i}$.
 The immediate goal is to compute the distance of each of the projected 
-points from $\hat{\zeta}$. Let\
+points from $\hat{\zeta}$. Let
 $$A_{i} = X_{i} - \hat{\zeta}$$
 $$B_{j} = X_{j} - \hat{\zeta}$$
-where $X_{j}$ are data points other than $X_{i}$,  $A_{i}$ and $B_{j}$ are column vectors having length $p$, and let\
+where $X_{j}$ are data points other than $X_{i}$,  $A_{i}$ and $B_{j}$ are column vectors having length $p$, and let
 $$C_{j} = \frac{A_{i}^{'}B_{j}}{B_{j}^{'}B_{j}}B_{j}$$
-$j=1,\ldots,n$. When projecting the points onto the line between $X_{i}$ and $\hat{\zeta}$, the projection distance of the $i$th point from $\hat{\zeta}$ is\
+$j=1,\ldots,n.$ When projecting the points onto the line between $X_{i}$ and $\hat{\zeta}$, the projection distance of the $i$th point from $\hat{\zeta}$ is
 $$D_{ij} = \|C_{j}\|$$
 where
     $$||C_{j}\| = \sqrt{C_{j1}^{2} + \ldots + C_{jp}^{2}}$$
@@ -39,9 +33,9 @@ where $M_{D}$ is the usual sample median based on the $D_{ij}$, and $\chi^{2}_{0
 
 In this project, we chose MVE and MCD as the robust location and scatter estimators for both Mahalanobis Distance and Projection Distance.
 
-Step 2: Reweighting the Covariance Matrix
+#### Step 2: Reweighting the Covariance Matrix
 
-Both of the previously mentioned leverage points detection techniques assign distances to each observation within its data cloud, and the issue with detecting leverage points has now become a unidimensional case. After identifying the leverage points, weights are assigned to their corresponding distances to downplay their effect on the parameter estimation. We considered Huber-Type weights:\
+Both of the previously mentioned leverage points detection techniques assign distances to each observation within its data cloud, and the issue with detecting leverage points has now become a unidimensional case. After identifying the leverage points, weights are assigned to their corresponding distances to downplay their effect on the parameter estimation. We considered Huber-Type weights:
 $$
 w_{1}(d) =
 \begin{cases}
@@ -52,7 +46,7 @@ $$
 $$w_{2}(d) = \{w_{1}(d)\}^{2}/\tau$$
 where d is the corresponding distance for each observation, u is the critical value, and $\tau$ is a tuning parameter. $w_{1}(d)$ is used in computing the reweighted mean:\
 $$\hat{\mu}_{x} = \frac{\Sigma_{i=1}^{n}w_{i1}y_{i}}{\Sigma_{i=1}^{n}w_{i1}}$$\
-and $w_{2}d$ is used to compute the final reweighted covariance matrix, which will be used in Stage 2:\
+and $w_{2}d$ is used to compute the final reweighted covariance matrix, which will be used in Stage 2:
 $$\hat{\Sigma}_{x} = \frac{1}{n}\Sigma_{i=1}^{n}w_{i2}(y_{i}-\hat{\mu}_{x})(y_{i}-\hat{\mu}_{x})'$$
 
 ### Stage 2: Apply Alignment on the Robust Covariance Matrix

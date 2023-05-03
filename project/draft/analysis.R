@@ -42,6 +42,30 @@ data2 <- cbind(data2, "sex" = HolzingerSwineford1939[157:301,]$sex)
 data2_fe <- data2 %>% filter(sex == 1)
 data2_ma <- data2 %>% filter(sex == 2)
 
+## alignment on dataset with leverage points
+# mod2 <- 'f1 =~ X1 + X2 + X3'
+# mod_fit_g1 <- cfa(mod2,
+#                   sample.cov = cov(data2_fe[1:3]),
+#                   sample.mean = colMeans(data2_fe[1:3]),
+#                   sample.nobs = nrow(data2_fe),
+#                   std.lv = TRUE)
+# mod_fit_g2 <- cfa(mod2,
+#                   sample.cov = cov(data2_ma[1:3]),
+#                   sample.mean = colMeans(data2_fe[1:3]),
+#                   sample.nobs = nrow(data2_ma),
+#                   std.lv = TRUE)
+# ld <- rbind(t(lavInspect(mod_fit_g1, what = "est")$lambda),
+#             t(lavInspect(mod_fit_g2, what = "est")$lambda))
+# rownames(ld) <- c("Female", "Male")
+# nu <-  rbind(t(lavInspect(mod_fit_g1, what = "est")$nu),
+#              t(lavInspect(mod_fit_g2, what = "est")$nu))
+# rownames(nu) <- c("Female", "Male")
+# res_adlp <- invariance.alignment(
+#     lambda = ld,
+#     nu = nu,
+#     wgt = matrix(sqrt(c(nrow(data2_fe), nrow(data2_ma))), nrow = 2, ncol = 3)
+# )
+
 set.seed(3456)
 res_mve <- robalign(method = "mve_mah", data_g1 = data2_fe[,1:3], data_g2 = data2_ma[,1:3], mod = mod2, group_name = c("female", "male"))
 res_mcd <- robalign(method = "mcd_mah", data_g1 = data2_fe[,1:3], data_g2 = data2_ma[,1:3],
