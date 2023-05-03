@@ -15,8 +15,24 @@ F &= \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\lambda_{jk1,1} -\lambda_{jk2,1}) \\ &+
 
 ## Steps for RAO
 
+## A Two-Stage Procedure
+
+### Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix
+
 Step 1: Computing Distances
 \newline
+
+A classical way to detect leverage observations in multivariate data sets is to use Mahalanobis Distance [@mahalanobis1936generalised], which measures the distance between a point ${\bf x}$ and the sample mean:
+$$d^{2} = ({\bf x}-\bar{\bf X})'{\bf S}^{-1}({\bf x}-\bar{\bf X})$$,
+where $\bar{\bf X}$ is the arithmetic mean of the data set and $\textbf{S}$ is the usual sample covariance matrix. Due to the fact that $\bar{\bf X}$ and $\textbf{S}$ is not robust, detecting outliers with Mahalanobis distance suffers from masking, meaning the failure to detect outliers due to their very presence. Alternatively, the diagonal elements of the hat matrix $\textbf{H}$ = $\bf X(\bf X^{t}X)^{-1}X^{t}$ can  be used to identify leverage points. However, the hat matrix, like the classical Mahalanobis distance, still suffers from masking, which can be explained by the relation between the $h_{ii}$ and the $d_{i}$ of the $\bf {x_{i}}$:
+$$h_{ii} = \frac{d_{i}^{2}}{n-1} + \frac{1}{n}$$
+
+Previous literature has suggested to replace the arithmetic mean $\bar{\bf X}$ and sample covariance matrix $\textbf{S}$ with robust estimators. @campbell1980robust proposed to use $\textit{M}$ estimators for $\bar{\bf X}$ and $\textbf{S}$. However, the breakdown point for $\textit{M}$ estimators is at most $1/(p+1)$ [@rousseeuw2011robust]. One can also consider using estimators of multivariate location and covariance that have high break-down point, such as minimum volume ellipsoid (MVE) introduced by @rousseeuw1985multivariate and minimum covariance determinant (MCD) [@rousseeuw1999fast].
+
+Once the robust Mahalanobis distance ($d_{ri}$) for each point is computed, an observation is declared as a leverage point if
+$$d_{ri} > \sqrt{\chi^{2}_{p, .975}}$$,
+where $\chi^{2}_{p, .975}$ is the .975 quantile of a chi-squared distribution with $p$ degrees of freedom.
+
 Step 2: Reweighting the Covariance Matrix
 \newline
 Step 3: Applying the Alignment Optimization
