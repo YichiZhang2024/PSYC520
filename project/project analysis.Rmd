@@ -241,5 +241,6 @@ list(res1$nu.aligned,
 cov(data_gp[1:3])
 res_outmve$rob_est_g1$weighted.covariance
 res_outmve$rob_est_g2$weighted.covariance
+(res_outmve$rob_est_g1$weighted.covariance + res_outmve$rob_est_g2$weighted.covariance)/2
 ```
 

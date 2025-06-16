@@ -5,16 +5,19 @@
 \documentclass[
   man]{apa7}
 \usepackage{amsmath,amssymb}
-\usepackage{lmodern}
 \usepackage{iftex}
 \ifPDFTeX
   \usepackage[T1]{fontenc}
   \usepackage[utf8]{inputenc}
   \usepackage{textcomp} % provide euro and other symbols
 \else % if luatex or xetex
-  \usepackage{unicode-math}
+  \usepackage{unicode-math} % this also loads fontspec
   \defaultfontfeatures{Scale=MatchLowercase}
   \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
 \fi
 % Use upquote if available, for straight quotes in verbatim environments
 \IfFileExists{upquote.sty}{\usepackage{upquote}}{}
@@ -51,36 +54,60 @@
   \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
 \setcounter{secnumdepth}{-\maxdimen} % remove section numbering
 % Make \paragraph and \subparagraph free-standing
+\makeatletter
 \ifx\paragraph\undefined\else
   \let\oldparagraph\paragraph
-  \renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+  \renewcommand{\paragraph}{
+    \@ifstar
+      \xxxParagraphStar
+      \xxxParagraphNoStar
+  }
+  \newcommand{\xxxParagraphStar}[1]{\oldparagraph*{#1}\mbox{}}
+  \newcommand{\xxxParagraphNoStar}[1]{\oldparagraph{#1}\mbox{}}
 \fi
 \ifx\subparagraph\undefined\else
   \let\oldsubparagraph\subparagraph
-  \renewcommand{\subparagraph}[1]{\oldsubparagraph{#1}\mbox{}}
+  \renewcommand{\subparagraph}{
+    \@ifstar
+      \xxxSubParagraphStar
+      \xxxSubParagraphNoStar
+  }
+  \newcommand{\xxxSubParagraphStar}[1]{\oldsubparagraph*{#1}\mbox{}}
+  \newcommand{\xxxSubParagraphNoStar}[1]{\oldsubparagraph{#1}\mbox{}}
 \fi
+\makeatother
+% definitions for citeproc citations
+\NewDocumentCommand\citeproctext{}{}
+\NewDocumentCommand\citeproc{mm}{%
+  \begingroup\def\citeproctext{#2}\cite{#1}\endgroup}
+\makeatletter
+ % allow citations to break across lines
+ \let\@cite@ofmt\@firstofone
+ % avoid brackets around text for \cite:
+ \def\@biblabel#1{}
+ \def\@cite#1#2{{#1\if@tempswa , #2\fi}}
+\makeatother
 \newlength{\cslhangindent}
 \setlength{\cslhangindent}{1.5em}
 \newlength{\csllabelwidth}
 \setlength{\csllabelwidth}{3em}
-\newlength{\cslentryspacingunit} % times entry-spacing
-\setlength{\cslentryspacingunit}{\parskip}
-\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
- {% don't indent paragraphs
-  \setlength{\parindent}{0pt}
+\newenvironment{CSLReferences}[2] % #1 hanging-indent, #2 entry-spacing
+ {\begin{list}{}{%
+  \setlength{\itemindent}{0pt}
+  \setlength{\leftmargin}{0pt}
+  \setlength{\parsep}{0pt}
   % turn on hanging indent if param 1 is 1
   \ifodd #1
-  \let\oldpar\par
-  \def\par{\hangindent=\cslhangindent\oldpar}
+   \setlength{\leftmargin}{\cslhangindent}
+   \setlength{\itemindent}{-1\cslhangindent}
   \fi
   % set entry spacing
-  \setlength{\parskip}{#2\cslentryspacingunit}
- }%
- {}
+  \setlength{\itemsep}{#2\baselineskip}}}
+ {\end{list}}
 \usepackage{calc}
-\newcommand{\CSLBlock}[1]{#1\hfill\break}
-\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
-\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLBlock}[1]{\hfill\break\parbox[t]{\linewidth}{\strut\ignorespaces#1\strut}}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{\strut#1\strut}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{\strut#1\strut}}
 \newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
 \ifLuaTeX
 \usepackage[bidi=basic]{babel}
@@ -166,13 +193,13 @@
   {\normalfont\normalsize\itshape\hspace{\parindent}{#1}\textit{\addperi}}{\relax}}
 \makeatother
 
-% \usepackage{etoolbox}
 \makeatletter
-\patchcmd{\HyOrg@maketitle}
+\usepackage{etoolbox}
+\patchcmd{\maketitle}
   {\section{\normalfont\normalsize\abstractname}}
   {\section*{\normalfont\normalsize\abstractname}}
   {}{\typeout{Failed to patch abstract.}}
-\patchcmd{\HyOrg@maketitle}
+\patchcmd{\maketitle}
   {\section{\protect\normalfont{\@title}}}
   {\section*{\protect\normalfont{\@title}}}
   {}{\typeout{Failed to patch title.}}
@@ -182,10 +209,11 @@
 \makeatletter
 \xapptocmd\appendix
   {\xapptocmd\section
-    {\addcontentsline{toc}{section}{\appendixname\ifoneappendix\else~\theappendix\fi\\: #1}}
+    {\addcontentsline{toc}{section}{\appendixname\ifoneappendix\else~\theappendix\fi: #1}}
     {}{\InnerPatchFailed}%
   }
 {}{\PatchFailed}
+\makeatother
 \keywords{measurement invariance, alignment, robust statistics}
 \DeclareDelayedFloatFlavor{ThreePartTable}{table}
 \DeclareDelayedFloatFlavor{lltable}{table}
@@ -200,9 +228,9 @@
 \ifLuaTeX
   \usepackage{selnolig}  % disable illegal ligatures
 \fi
-\IfFileExists{bookmark.sty}{\usepackage{bookmark}}{\usepackage{hyperref}}
+\usepackage{bookmark}
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
-\urlstyle{same} % disable monospaced font for URLs
+\urlstyle{same}
 \hypersetup{
   pdftitle={Robust Alignment Optimization for Approximate Invariance},
   pdfauthor={Lai Xu1 \& Yichi Zhang1},
@@ -229,22 +257,361 @@ Correspondence concerning this article should be addressed to Yichi Zhang, Depar
 \begin{document}
 \maketitle
 
-\hypertarget{methods}{%
-\section{Methods}\label{methods}}
+Educational or psychological researchers are often interested in assessing people's latent traits that are not directly observable (i.e., self-efficacy). One commonly used assessment method is to develop psychological scales and ask people to rate the scale items. An important assumption of using psychological scales is measurement invariance (MI), meaning the scales have the same measurement properties for people from different groups. By establishing MI, researchers could compare latent means across groups while holding measurement parameters invariant. However, exact invariance (i.e., absolute equivalence in parameter estimates) is often rejected in applied research, so the alignment optimization has been proposed to accurately estimate the latent trait means without requiring the exact invariance across groups (Asparouhov \& Muthén, 2014).
 
-\hypertarget{illustrative-example}{%
-\section{Illustrative Example}\label{illustrative-example}}
+However, alignment is based on multiple-group confirmatory factor analysis (MG-CFA), in which the variance-covariance matrix and correlations are involved for the calculation of such procedure. It is well-known that the traditional measures of scatter matrix and covariance are sensitive to outliers or data contamination. There are some existing robust estimation methods in structural equation models (SEM), such as the two-stage robust method by Yuan and Bentler (1998b), the direct robust method by Yuan and Zhong (2008a), and multivariate-t based SEM by Yuan and Bentler (1998a). However, these robust methods have not been used together with alignment. Thus, the current study propose the robust alignment optimization (RAO) as an alternative to downweigh the impact of data contamination.
 
-\hypertarget{discussion}{%
-\section{Discussion}\label{discussion}}
+We start the paper with an overview of measurement invariance literature and the alignment optimization. Next, we discuss the existing robust estimation methods in SEM. Then we described the proposed RAO methods in detail. Finally, an illustrative example is included to demonstrate the effectiveness of RAO. We end the paper with a discussion on advantages of the proposed method, as well as limitations and future directions.
+
+\subsection{Measurement Invariance and Alignment}\label{measurement-invariance-and-alignment}
+
+Measurement invariance (MI) holds when individuals with the same level of the latent construct have similar performances on the scale regardless of their group membership (Meredith, 1993). If the scale consistently gives higher scores for individuals from one group than the other groups, then the scale violates MI (also called measurement noninvariance). It is an essential assumption for applied researchers to confidently conclude that the observed group differences are due to differences in the latent construct instead of the bias inherent in scale items. One common framework to test MI is the confirmatory factor analysis framework (CFA) (Joreskog, 1971). Assume one latent construct is measured by \(p\) continuous indicators for \(K\) groups. The single factor MG-CFA model can be expressed in the following form,
+\begin{equation}
+y_{ik} = \tau_k + \uplambda_k\eta_{ik} + \epsilon_{ik}. \label{eq:fa}
+\end{equation}
+Here \(y_{ik}\) and \(\eta_{ik}\) are the observed continuous response and the latent construct score for the \(i\)th person in the \(k\)th group. The three other model parameters are the intercepts, \(\nu_k\), factor loadings, \(\uplambda_k\), and the unique factor variables, \(\epsilon_{ik}\). The above model assumes \(\epsilon_{ik}\) follows a multivariate normal distribution with a mean vector of 0 and a variance-covariance matrix \(\Theta_{ik}\), which is a diagonal matrix that holds the local independence assumption.
+
+Four levels of invariance have been widely used in existing literature (Meredith, 1993). First, configural invariance assumes the same factor structure across groups. Second, metric/weak invariance requires the equality of factor loadings across groups. Third, scalar/strong invariance requires the equality of intercepts across groups in addition to factor loadings. Lastly, strict invariance requires equality of intercepts or thresholds, factor loadings and unique factor variances across groups.
+
+The equality/invariance of model parameters across groups can be tested by comparing nested models, which means one model with equality constraints of a particular parameter and the other without such constraints. For example, the invariance of intercepts can be tested by comparing the model with freely estimated intercepts and another model that has equality constraints of intercepts across groups. Traditionally, the tenability of the equality constraints is tested by the likelihood ratio test (LRT) or modification indices under NHST (Shi et al., 2019; Steiger, Shapiro, \& Browne, 1985). With assumptions of multivariate normality and the null hypothesis of absolute equivalence of model parameters, the likelihood ratio chi-square difference between the nested models follows a central chi-square distribution with degrees of freedom (df) equal to the difference in number of free parameters between models (Shi et al., 2019). If the test is statistically significant, then the null hypothesis is rejected and researchers could conclude the tested parameter is noninvariant.
+
+\subsubsection{Alignment}\label{alignment}
+
+LRT has several limitations. First, it can be time-consuming when the number of group is large (Asparouhov \& Muthén, 2014). Second, it tests for exact invariance, which is often violated in applied research. Therefore, Asparouhov and Muthén (2014) proposed the alignment optimization, which simplified the MI testing procedure by using approximate invariance parameter estimates instead of the exact MI results. Alignment has been found to perform well in recovering parameter estimates when the amount of noninvariance is small (Flake \& McCoach, 2018; Luong \& Flake, 2022).
+
+The first step of alignment is to fit a configural CFA model, with fixed factor means of 0 and variances of 1 for all groups. Next, alignment frees the factor mean and variance for the reference group and aims to find a set of parameter estimates (loadings and intercepts) that give the same likelihood as the configural model (Muthén \& Asparouhov, 2014). For every set of \(\alpha_k\) and \(\psi_k\), there are factor loadings and intercepts estimates that fulfill this condition. Specifically, they can be found using equations below (Muthén \& Asparouhov, 2014).
+\begin{align}
+\uplambda_{jk,1} &= \frac{\uplambda_{jk,0}}{\sqrt{\psi_k}}\\
+\psi_{jk,1} &= \nu_{jk,0} - \alpha_k \frac{\uplambda_{jk,0}}{\sqrt{\psi_k}}
+\end{align}
+Here \(\uplambda_{jk,1}\) and \(\nu_{jk,1}\) are the factor loading and intercepts estimates that generate the same likelihood as the configural model, whereas \(\uplambda_{jk,0}\) and \(\nu_{jk,0}\) are the parameter estimates from the configural model.
+
+Next, alignment tries to minimize the total amount of noninvariance across items and groups with respect to \(\alpha_k\) and \(\psi_k\). The total loss function, \(F\), is defined below (Asparouhov \& Muthén, 2014)\\
+\begin{align}
+F &= \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\uplambda_{jk1,1} -\uplambda_{jk2,1}) + \sum_p \sum_{k_1 < k_2}w_{k_1,k_2}f(\nu_{jk1,1} -\nu_{jk2,1}) 
+\end{align}
+Here the component loss function \(f\), can be set as \(f(x) = \sqrt{\sqrt{x^2 + \epsilon}}\) with \(\epsilon\) being a small number (i.e., 0.0001). The weight matrix \(w_{k_1,k_2}\) reflects the group size and is often set as \(w_{k_1,k_2} = \sqrt{N_{k_1} N_{k_2}}\). In other word, the alignment method often generates a solution with a few large noninvariant parameters and many approximate invariant parameters (Asparouhov \& Muthén, 2014).
+
+\subsection{Outliers and Leverage Points}\label{outliers-and-leverage-points}
+
+Outliers are observations that do not follow the pattern of the majority of the data. Outliers are common in any data set since they do not need to be unusual observations necessarily, they can simply arise because of measurement errors, misplaced decimal points, sampling errors and so on. Methods to detect outliers in univariate data sets have been well studied. However, it is not trivial to detect outliers in a multivariable data cloud. Since the literature for measurement invariance and alignment is built in the framework of confirmatory analysis, it is important to define different types of outliers as the first step in the context of CFA. Consider the factor analysis model described in equation~\eqref{eq:fa},
+it resembes the regression model:
+\begin{equation}
+\textbf{y} = \beta_{0} + \beta\textbf{X} + \epsilon
+\end{equation}
+where \(\textbf{y}\) is a vector of observed values, \(\beta_{0}\) and \(\beta\) is the intercept and slope estimates, and \(\epsilon\) contains errors, one can regard the factor analysis as a multivariate regression model with latent predictors (Yuan \& Zhong, 2013). Thus, the regression model will be used for demonstration of three types of data contamination in a multivariable data set. Leverage points are unusual observation when the dependent variable is ignored, meaning leverage points are outliers among independent variables. Regression outliers refer to observations for
+which their residual are outliers based on a regression line that fits the bulk of the points. Bad leverage points are observations that are identified as leverage points and regression outliers. Similarly, in factor analysis, good leverage observations, which are defined as extreme
+values in factors but small errors or uniquenesses, enlarge the elements of the sample covariance matrix \(\textbf{S}\) and implied covariance matrix \(\Sigma(\hat{\Theta})\); outliers and bad leverage points, defined as cases that have extreme values in errors regardless
+of the values of the factors, enlarge the elements of S and \(\Sigma(\hat{\Theta})\) as well as the residual matrix S - \(\Sigma(\hat{\Theta})\); they also result in biased estimates of \(\hat{\Lambda}, \hat{\Phi}\) and \(\hat{\Psi}\) (Yuan \& Zhong, 2013). These concepts are equally applicable to SEM models where prediction errors can be regarded as either factors or errors (Yuan \& Zhong, 2008b).
+
+\subsection{The Current Study}\label{the-current-study}
+
+To our knowledge, there is no discussion on robustness of alignment. Thus, we developed a robust alignment optimization that could produce consistent and efficient estimation with the existence of outliers or influential observations.
+
+\section{Methods}\label{methods}
+
+\subsection{Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix}\label{stage-1-detect-reweight-leverage-points-and-calculate-robust-covariance-matrix}
+
+\subsubsection{Step 1: Computing Distances}\label{step-1-computing-distances}
+
+A classical way to detect leverage observations in multivariate data sets is to use Mahalanobis Distance (Mahalanobis, 1936), which measures the distance between a point \({\bf x}\) and the sample mean:
+\begin{equation}
+d^{2} = ({\bf x}-\bar{\bf X})'{\bf S}^{-1}({\bf x}-\bar{\bf X})
+\end{equation}
+where \(\bar{\bf X}\) is the arithmetic mean of the data set and \(\textbf{S}\) is the usual sample covariance matrix. Due to the fact that \(\bar{\bf X}\) and \(\textbf{S}\) is not robust, detecting outliers with Mahalanobis distance suffers from masking, meaning the failure to detect outliers due to their very presence. Alternatively, the diagonal elements of the hat matrix \(\textbf{H}\) = \(\bf X(\bf X^{t}X)^{-1}X^{t}\) can be used to identify leverage points. However, the hat matrix, like the classical Mahalanobis distance, still suffers from masking, which can be explained by the relation between the \(h_{ii}\) and the \(d_{i}\) of the \(\bf {x_{i}}\):
+\begin{equation}
+h_{ii} = \frac{d_{i}^{2}}{n-1} + \frac{1}{n}
+\end{equation}
+
+Previous literature has suggested to replace the arithmetic mean \(\bar{\bf X}\) and sample covariance matrix \(\textbf{S}\) with robust estimators. Campbell (1980) proposed to use \(\textit{M}\) estimators for \(\bar{\bf X}\) and \(\textbf{S}\). However, the breakdown point for \(\textit{M}\) estimators is at most \(1/(p+1)\) (Rousseeuw, Hampel, Ronchetti, \& Stahel, 2011). One can also consider using estimators of multivariate location and covariance that have high break-down point, such as minimum volume ellipsoid (MVE) introduced by Rousseeuw (1985) and minimum covariance determinant (MCD) (Rousseeuw \& Driessen, 1999).
+
+Once the robust Mahalanobis distance (\(d_{ri}\)) for each point is computed, an observation is declared as a leverage point if
+\begin{equation}
+d_{ri} > \sqrt{\chi^{2}_{p, .975}}
+\end{equation}
+where \(\chi^{2}_{p, .975}\) is the .975 quantile of a chi-squared distribution with \(p\) degrees of freedom.
+
+An alternative method to detect leverage points we considered here is called Projection Distance. Following Wilcox (2017), a projection-type method for detecting outliers can be described as follows. Consider a random sample and let \(n\) denote the sample size.
+The method begins by finding the center of the data cloud, \(\hat{\zeta}\). In this paper, the marginal medians are used for \(\hat{\zeta}\). Next, for a fixed point \(X_{i}\), project all n points onto the line connecting the center \(\hat{\zeta}\) and \(X_{i}\).
+The immediate goal is to compute the distance of each of the projected
+points from \(\hat{\zeta}\). Let
+\begin{equation}
+A_{i} = X_{i} - \hat{\zeta}
+\end{equation}
+\begin{equation}
+B_{j} = X_{j} - \hat{\zeta}
+\end{equation}
+where \(X_{j}\) are data points other than \(X_{i}\), \(A_{i}\) and \(B_{j}\) are column vectors having length \(p\), and let
+\begin{equation}
+C_{j} = \frac{A_{i}^{'}B_{j}}{B_{j}^{'}B_{j}}B_{j}
+\end{equation}
+\(j=1,\ldots,n.\) When projecting the points onto the line between \(X_{i}\) and \(\hat{\zeta}\), the projection distance of the \(i\)th point from \(\hat{\zeta}\) is
+\[D_{ij} = \|C_{j}\|\]
+where
+\begin{equation}
+    ||C_{j}\| = \sqrt{C_{j1}^{2} + \ldots + C_{jp}^{2}}
+\end{equation}
+Then, we used ideal fourths as the criterion to check for outliers among the \(D_{ij}\) values. The \(i\)th point is declared an outlier if any of its n projections satisfies
+\begin{equation}
+D_{ij} > M_{D} + \sqrt{\chi^{2}_{0.975,p}}(q_{2}-q_{1})
+\end{equation}
+where \(M_{D}\) is the usual sample median based on the \(D_{ij}\), and \(\chi^{2}_{0.975,p}\) is the 0.975 quantile of a chi-squared distribution with \(p\) degrees of freedom. Repeating this process for each \(i\), \(i = 1, \ldots, n\), a point is declared an outlier if any of these projections satisfies the above criterion.
+
+In this project, we chose MVE and MCD as the robust location and scatter estimators for both Mahalanobis Distance and Projection Distance. Details on MVE and MCD estimators can be found in Wilcox (2011).
+
+\subsubsection{Step 2: Reweighting the Covariance Matrix}\label{step-2-reweighting-the-covariance-matrix}
+
+Both of the previously mentioned leverage points detection techniques assign distances to each observation within its data cloud, and the issue with detecting leverage points has now become a unidimensional case. After identifying the leverage points, weights are assigned to their corresponding distances to downplay their effect on the parameter estimation. We considered Huber-Type weights:
+\begin{equation}
+w_{1}(d) =
+\begin{cases}
+ 1\ ,& \text{if} \space d \leq u\\
+ \frac{u}{d} ,& \text{if} \space d \ge u
+ \end{cases}       
+\end{equation}
+\begin{equation}
+w_{2}(d) = \{w_{1}(d)\}^{2}/\tau
+\end{equation}
+where d is the corresponding distance for each observation, u is the critical value, and \(\tau\) is a tuning parameter. \(w_{1}(d)\) is used in computing the reweighted mean:
+\begin{equation}
+\hat{\mu}_{x} = \frac{\Sigma_{i=1}^{n}w_{i1}y_{i}}{\Sigma_{i=1}^{n}w_{i1}}
+\end{equation}
+and \(w_{2}d\) is used to compute the final reweighted covariance matrix, which will be used in Stage 2:
+\begin{equation}
+\hat{\Sigma}_{x} = \frac{1}{n}\Sigma_{i=1}^{n}w_{i2}(y_{i}-\hat{\mu}_{x})(y_{i}-\hat{\mu}_{x})'
+\end{equation}
+
+\subsubsection{Stage 2: Apply Alignment on the Robust Covariance Matrix}\label{stage-2-apply-alignment-on-the-robust-covariance-matrix}
+
+The second stage of RAO applies alignment on obtained robust covariance matrix from the first stage. The goal is to find a model that can be used to make accurate factor mean comparisons by searching for factor mean and variance estimates that minimize the total measurement noninvariance while downweighing the impact of influential observations.
+
+\section{Illustrative Example}\label{illustrative-example}
+
+\subsubsection{Descriptives}\label{descriptives}
+
+We demonstrated RAO on the classic Holzinger and Swineford (1939) dataset. To better illustrate the result of RAO, we manually added five leverage points following the procedure described in Yuan and Zhong (2013). The original dataset was proposed to investigate the mental ability test scores of seventh- and eighth-grade students from two schools. The subset dataset only contained students from one school (Grant-White) with a sample size of 145 students (72 female and 73 male). We used the first three variables, which measured the students' spatial ability. The goal of this empirical example is to test measurement invariance of the spatial ability scale across gender.
+
+To examine the effect of leverage observations on aligned estimates, we modified the first dataset by replacing the last five cases as leverage points:
+\begin{equation}
+y_{i}^{2} = y_{i}, i = 1,2,...,140;
+\end{equation}
+\begin{equation}
+y_{i}^{2} = y_{i} + h_{i}\hat{\Lambda}\hat{\xi}_{i}, i = 141,...,145,
+\end{equation}
+where \(\hat{\Lambda}\) is the estimated factor loading matrix, \(\hat{\xi}_{i}\) is the resulting barlett factor score predictor, and the five \(h_{i}\)s are approximately 0.3881, 1.3762, 5.6153, 2.4312, and 1.7442 according to Yuan and Zhong (2013). Thus, \(y_{141}\) to \(y_{145}\) are considered as leverage points.
+
+A one-factor CFA model with three items was fit to the modified dataset using the \emph{lavaan} R package (Rosseel, 2012), \(\chi^2(df = 6) = 70.660\). Since it is a saturated model, model fit statistics such as RMSEA and CFI are not available. We described the procedure of RAO in detail below.
+
+\subsubsection{Robust Alignment Optimization (RAO)}\label{robust-alignment-optimization-rao}
+
+\paragraph{Stage 1: Detect, Reweight Leverage Points, and Calculate Robust Covariance Matrix}\label{stage-1-detect-reweight-leverage-points-and-calculate-robust-covariance-matrix-1}
+
+In this example we computed the Mahalanobis Distance and Projection Distance with MVE and MCD as the robust location and scatter estimators. Two versions of Projection Distance was used: random search and exhaustive search. Random search means a random point is selected and used as the fixed point, \(X_{i}\), such that all other points will be projected on the line connecting the center and \(X_{i}\). In contrast, exhaustive search means the procedure is repeated on all data points (i.e., every point is used as the fixed point to identify the leverage observations). Once the leverage observations are flagged, Huber-Type weights are used to reweight the covariance matrix. In total, we computed six types of robust covariance matrix: Mahalanobis Distance with MVE, Mahalanobis Distance with MCD, Projection Distance with MVE (random), Projection Distance with MCD (random), Projection Distance with MVE (exhaustive), Projection Distance with MCD (exhaustive). The R codes for generating these types of robust covariance matrices can be found at the online Github repository (\url{https://github.com/YichiZhang2024/PSYC520/tree/main/project}).
+
+\begin{lltable}
+
+\begin{TableNotes}[para]
+\normalsize{\textit{Note.} MD means Mahalanobis Distance; PMVE means Projection Distance with MVE; PMCD means Projection Distance with MCD}
+\end{TableNotes}
+
+\scriptsize{
+
+\begin{longtable}{lcccclcccclcccclcccclcccc}\noalign{\getlongtablewidth\global\LTcapwidth=\longtablewidth}
+\caption{\label{tab:cov}Covariance Matrix From Original Data and From RAO}\\
+\toprule
+ & \multicolumn{3}{c}{Original Data} & \multicolumn{3}{c}{Modified Data} & \multicolumn{3}{c}{MD with MVE} & \multicolumn{3}{c}{MD with MCD} & \multicolumn{3}{c}{PMVE (random)} & \multicolumn{3}{c}{PMCD (random)} & \multicolumn{3}{c}{PMVE (exhaustive)} & \multicolumn{2}{c}{PMCD (exhaustive)}  &\\
+\cmidrule(r){2-4} \cmidrule(r){5-7} \cmidrule(r){8-10} \cmidrule(r){11-13} \cmidrule(r){14-16} \cmidrule(r){17-19} \cmidrule(r){20-22} \cmidrule(r){23-24}
+ & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3}\\
+\midrule
+\endfirsthead
+\caption*{\normalfont{Table \ref{tab:cov} continued}}\\
+\toprule
+ & \multicolumn{3}{c}{Original Data} & \multicolumn{3}{c}{Modified Data} & \multicolumn{3}{c}{MD with MVE} & \multicolumn{3}{c}{MD with MCD} & \multicolumn{3}{c}{PMVE (random)} & \multicolumn{3}{c}{PMCD (random)} & \multicolumn{3}{c}{PMVE (exhaustive)} & \multicolumn{2}{c}{PMCD (exhaustive)}  &\\
+\cmidrule(r){2-4} \cmidrule(r){5-7} \cmidrule(r){8-10} \cmidrule(r){11-13} \cmidrule(r){14-16} \cmidrule(r){17-19} \cmidrule(r){20-22} \cmidrule(r){23-24}
+ & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3}\\
+\midrule
+\endhead
+x1 & 1.33 & 0.42 & 0.54 & 1.45 & 0.49 & 0.66 & 0.65 & 0.21 & 0.28 & 1.15 & 0.44 & 0.54 & 1.26 & 0.42 & 0.56 & 1.31 & 0.45 & 0.59 & 0.41 & 0.10 & 0.17 & 0.44 & 0.10 & 0.18\\
+x2 & 0.42 & 1.23 & 0.48 & 0.49 & 1.27 & 0.55 & 0.21 & 0.44 & 0.20 & 0.44 & 0.93 & 0.43 & 0.42 & 1.10 & 0.47 & 0.45 & 1.15 & 0.50 & 0.10 & 0.35 & 0.14 & 0.10 & 0.38 & 0.15\\
+x3 & 0.54 & 0.48 & 1.08 & 0.66 & 0.55 & 1.20 & 0.28 & 0.20 & 0.46 & 0.54 & 0.43 & 0.90 & 0.56 & 0.47 & 1.02 & 0.59 & 0.50 & 1.06 & 0.17 & 0.14 & 0.34 & 0.18 & 0.15 & 0.37\\
+\bottomrule
+\addlinespace
+\insertTableNotes
+\end{longtable}
+
+}
+
+\end{lltable}
+
+
+
+Table~\ref{tab:cov} showed the covariance matrix from the original Holzinger and Swineford (1939) dataset, the covariance matrix from the modified dataset (with manually added leverage points), as well as the six types of robust covariance matrices described above. As expected, the modified dataset has larger item variances and covariances compared to the original dataset due to the influence of manually added leverage points. Among all methods, Projection Distance and MCD with randomly picked fixed point provides the closest covariance matrix to the original dataset. Project Distance and MVE with random search performed similarly in recovering the original covariance matrix. However, the other four methods provide unsatisfactory results.
+
+\paragraph{Stage 2: Apply Alignment on the Robust Covariance Matrix}\label{stage-2-apply-alignment-on-the-robust-covariance-matrix-1}
+
+We then applied alignment on the obtained robust covariance matrices from step 2. Specifically, alignment was conducted using the \emph{sirt} R package (Robitzsch, 2022). The default \texttt{FIXED} option was used so that the SD of of female was fixed to 1. See Table~\ref{tab:mvar} for aligned factor means and variances from different methods. Since female is the reference group, we fixed the factor mean and factor variance to 0 and 1 correspondingly. Male has a lower latent spatial ability than female, with factor means ranging from -0.76 to 0). The Projection Distance with MVE using random fixed point method provided the closest estimates of factor means and variances to the original dataset.
+
+Table~\ref{tab:alignpar} showed the aligned factor loadings and intercepts from RAO. Consistent with previous result, the Projection Distance with random fixed point methods performed the best in recovering aligned factor loadings and intercepts estimates. In this case, MCD and MVE generated the same results after rounding to two decimal points. Mahalanobis Distance with MCD and MVE also gave acceptable parameter estimates, even though their performances were less ideal than the project distance with random fixed points approaches. Projection Distance using exhaustive search methods generated acceptable estimates for intercepts but not for factor loadings.
+
+\begin{table}[tbp]
+
+\begin{center}
+\begin{threeparttable}
+
+\caption{\label{tab:mvar}Aligned Factor Means and Variances From RAO}
+
+\begin{tabular}{lcccc}
+\toprule
+ & \multicolumn{2}{c}{Factor Means} & \multicolumn{2}{c}{Factor Variances} \\
+\cmidrule(r){2-3} \cmidrule(r){4-5}
+ & \multicolumn{1}{c}{Female} & \multicolumn{1}{c}{Male} & \multicolumn{1}{c}{Female} & \multicolumn{1}{c}{Male}\\
+\midrule
+Original Data & 0.00 & -0.17 & 1.00 & 1.63\\
+Modified Data & 0.00 & 0.00 & 1.00 & 1.59\\
+MD with MVE & 0.00 & -0.20 & 1.00 & 1.41\\
+MD with MCD & 0.00 & -0.11 & 1.00 & 1.21\\
+PMVE (random) & 0.00 & -0.20 & 1.00 & 1.60\\
+PMCD (random) & 0.00 & -0.20 & 1.00 & 1.67\\
+PMVE (exhaustive) & 0.00 & -0.65 & 1.00 & 1.11\\
+PMCD (exhaustive) & 0.00 & -0.76 & 1.00 & 1.01\\
+\bottomrule
+\addlinespace
+\end{tabular}
+
+\begin{tablenotes}[para]
+\normalsize{\textit{Note.} MD means Mahalanobis Distance; PMVE means Projection Distance with MVE; PMCD means Projection Distance with MCD}
+\end{tablenotes}
+
+\end{threeparttable}
+\end{center}
+
+\end{table}
+
+
+
+\begin{lltable}
+
+\begin{TableNotes}[para]
+\normalsize{\textit{Note.} MD means Mahalanobis Distance; PMVE means Projection Distance with MVE; PMCD means Projection Distance with MCD}
+\end{TableNotes}
+
+\tiny{
+
+\begin{longtable}{lcccclcccclcccclcccclcccc}\noalign{\getlongtablewidth\global\LTcapwidth=\longtablewidth}
+\caption{\label{tab:alignpar}Aligned Factor Loadings and Intercepts From RAO}\\
+\toprule
+ & \multicolumn{3}{c}{Original Data} & \multicolumn{3}{c}{Modified Data} & \multicolumn{3}{c}{MD with MVE} & \multicolumn{3}{c}{MD with MCD} & \multicolumn{3}{c}{PMVE (random)} & \multicolumn{3}{c}{PMCD (random)} & \multicolumn{3}{c}{PMVE (exhaustive)} & \multicolumn{2}{c}{PMCD (exhaustive)}  &\\
+\cmidrule(r){2-4} \cmidrule(r){5-7} \cmidrule(r){8-10} \cmidrule(r){11-13} \cmidrule(r){14-16} \cmidrule(r){17-19} \cmidrule(r){20-22} \cmidrule(r){23-24}
+ & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3}\\
+\midrule
+\endfirsthead
+\caption*{\normalfont{Table \ref{tab:alignpar} continued}}\\
+\toprule
+ & \multicolumn{3}{c}{Original Data} & \multicolumn{3}{c}{Modified Data} & \multicolumn{3}{c}{MD with MVE} & \multicolumn{3}{c}{MD with MCD} & \multicolumn{3}{c}{PMVE (random)} & \multicolumn{3}{c}{PMCD (random)} & \multicolumn{3}{c}{PMVE (exhaustive)} & \multicolumn{2}{c}{PMCD (exhaustive)}  &\\
+\cmidrule(r){2-4} \cmidrule(r){5-7} \cmidrule(r){8-10} \cmidrule(r){11-13} \cmidrule(r){14-16} \cmidrule(r){17-19} \cmidrule(r){20-22} \cmidrule(r){23-24}
+ & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3} & \multicolumn{1}{c}{x1} & \multicolumn{1}{c}{x2} & \multicolumn{1}{c}{x3}\\
+\midrule
+\endhead
+\multicolumn{25}{c}{factor loadings}\\
+Female & 0.50 & 0.40 & 1.00 & 0.56 & 0.42 & 1.12 & 0.44 & 0.30 & 0.66 & 0.56 & 0.35 & 0.81 & 0.52 & 0.39 & 1.04 & 0.52 & 0.39 & 1.04 & 0.32 & 0.26 & 0.67 & 0.35 & 0.28 & 0.71\\
+Male & 0.49 & 0.48 & 0.43 & 0.55 & 0.51 & 0.47 & 0.43 & 0.33 & 0.29 & 0.55 & 0.52 & 0.49 & 0.51 & 0.48 & 0.43 & 0.51 & 0.48 & 0.43 & 0.32 & 0.29 & 0.30 & 0.34 & 0.30 & 0.31\\
+\multicolumn{25}{c}{intercepts}\\
+Female & 4.97 & 6.23 & 2.14 & 4.95 & 6.21 & 2.12 & 4.77 & 5.88 & 2.03 & 4.86 & 6.03 & 2.07 & 4.95 & 6.21 & 2.12 & 4.95 & 6.21 & 2.12 & 4.92 & 6.17 & 2.11 & 4.93 & 6.18 & 2.11\\
+Male & 4.97 & 6.25 & 1.93 & 4.95 & 6.21 & 2.12 & 4.76 & 5.98 & 1.76 & 4.85 & 6.12 & 1.84 & 4.95 & 6.24 & 1.90 & 4.95 & 6.24 & 1.90 & 4.93 & 6.18 & 1.96 & 4.95 & 6.18 & 1.99\\
+\bottomrule
+\addlinespace
+\insertTableNotes
+\end{longtable}
+
+}
+
+\end{lltable}
+
+
+
+\section{Discussion}\label{discussion}
+
+The current research proposed robust alignment optimization (RAO), a two-stage procedure that can accurately estimate factor means with the existence of influential observations while taking account of measurement bias. Specifically, this procedure first obtains the robust covariance matrix and then conducts alignment on the obtained matrix. We described six types of robust covariance matrices in detail: Mahalanobis Distance with MVE, Mahalanobis Distance with MCD, Projection Distance with MVE (random), Projection Distance with MCD (random), Projection Distance with MVE (exhaustive), Projection Distance with MCD (exhaustive). The illustrative example showed the Projection Distance methods with exhaustive search performed the best among all methods in recovering covariance matrix and providing accurate parameter estimates with the existence of leverage points.
+
+The proposed procedure has several advantages. First, data contamination is common in applied research, but it has been overlooked in the current literature of measurement invariance. The conventional methods are sensitve to influential observations that even a single outlying observation could bias the MI testing results. In contrast, the developed RAO procedure could produce consistent and efficient estimation with the existence of influential observations. Second, using outlier detection techniques with robust location and scatter estimators avoids masking effect, meaning the failure to detect outliers due to their very presence, which is a common issue in conventional outlier detection methods.
+
+In this project, we only modified the data so that it contains leverage observations. To test the full effect of above-mentioned data contamination detection techniques and their corresponding alignment indices, outliers and bad leverage observations are needed to be further studies. In addition, we conducted a two-stage robust procedure (TSR) in our study. However, a direct robust method (DR) has also been suggested by Yuan and Zhong (2013), in which distances are directly used in the computation of the robust covariance matrix. Further analyses are needed to compare which method performs better in either stage. Furthermore, a simulation study will be ideal to set a ground truth so one can decide if the data contamination detection techniques are identifying unusual observations as they are supposed to, since we cannot guarantee the original data set that we used are free of such contamination. Lastly, the model used in the illustrative example is saturated, so model fit statistics such as root-mean-square error of approximation (RMSEA), comparative fit index (CFI), and standardized root-mean-square residual (SRMR) are missing. Future study should apply RAO on a different example and evaluate the performance of the proposed procedure.
 
 \newpage
 
-\hypertarget{references}{%
-\section{References}\label{references}}
+\section{References}\label{references}
 
-\hypertarget{refs}{}
-\begin{CSLReferences}{0}{0}
+\phantomsection\label{refs}
+\begin{CSLReferences}{1}{0}
+\bibitem[\citeproctext]{ref-asparouhov2014}
+Asparouhov, T., \& Muthén, B. (2014). Multiple-{Group} factor analysis alignment. \emph{Structural Equation Modeling: A Multidisciplinary Journal}, \emph{21}(4), 495--508. \url{https://doi.org/10.1080/10705511.2014.919210}
+
+\bibitem[\citeproctext]{ref-campbell1980robust}
+Campbell, N. A. (1980). Robust procedures in multivariate analysis i: Robust covariance estimation. \emph{Journal of the Royal Statistical Society: Series C (Applied Statistics)}, \emph{29}(3), 231--237.
+
+\bibitem[\citeproctext]{ref-flake2017}
+Flake, J. K., \& McCoach, D. B. (2018). An {Investigation} of the {Alignment} {Method} {With} {Polytomous} {Indicators} {Under} {Conditions} of {Partial} {Measurement} {Invariance}. \emph{Structural Equation Modeling: A Multidisciplinary Journal}, \emph{25}(1), 56--70. \url{https://doi.org/10.1080/10705511.2017.1374187}
+
+\bibitem[\citeproctext]{ref-holzinger1939}
+Holzinger, K. J., \& Swineford, F. (1939). A study in factor analysis: The stability of a bi-factor solution. \emph{Supplementary Educational Monographs}, \emph{48}, xi + 91--xi + 91.
+
+\bibitem[\citeproctext]{ref-joreskog1971}
+Joreskog, K. G. (1971). Simultaneous factor analysis in several populations. \emph{Psychometrika}, \emph{36}(4), 409--426. \url{https://doi.org/10.1007/BF02291366}
+
+\bibitem[\citeproctext]{ref-luong2022}
+Luong, R., \& Flake, J. K. (2022). Measurement invariance testing using confirmatory factor analysis and alignment optimization: {A} tutorial for transparent analysis planning and reporting. \emph{Psychological Methods}. \url{https://doi.org/10.1037/met0000441}
+
+\bibitem[\citeproctext]{ref-mahalanobis1936generalised}
+Mahalanobis, P. C. (1936). On the generalised distance in statistics. \emph{Proceedings of the National Institute of Science of India}, \emph{12}, 49--55.
+
+\bibitem[\citeproctext]{ref-meredith1993}
+Meredith, W. (1993). Measurement invariance, factor analysis and factorial invariance. \emph{Psychometrika}, \emph{58}(4), 525--543. \url{https://doi.org/10.1007/BF02294825}
+
+\bibitem[\citeproctext]{ref-muthen2014}
+Muthén, B., \& Asparouhov, T. (2014). {IRT} studies of many groups: The alignment method. \emph{Frontiers in Psychology}, \emph{5}. Retrieved from \url{https://www.frontiersin.org/articles/10.3389/fpsyg.2014.00978}
+
+\bibitem[\citeproctext]{ref-R-sirt}
+Robitzsch, A. (2022). \emph{Sirt: Supplementary item response theory models}. Retrieved from \url{https://CRAN.R-project.org/package=sirt}
+
+\bibitem[\citeproctext]{ref-R-lavaan}
+Rosseel, Y. (2012). {lavaan}: An {R} package for structural equation modeling. \emph{Journal of Statistical Software}, \emph{48}(2), 1--36. \url{https://doi.org/10.18637/jss.v048.i02}
+
+\bibitem[\citeproctext]{ref-rousseeuw1985multivariate}
+Rousseeuw, P. J. (1985). Multivariate estimation with high breakdown point. \emph{Mathematical Statistics and Applications}, \emph{8}(283-297), 37.
+
+\bibitem[\citeproctext]{ref-rousseeuw1999fast}
+Rousseeuw, P. J., \& Driessen, K. V. (1999). A fast algorithm for the minimum covariance determinant estimator. \emph{Technometrics}, \emph{41}(3), 212--223.
+
+\bibitem[\citeproctext]{ref-rousseeuw2011robust}
+Rousseeuw, P. J., Hampel, F. R., Ronchetti, E. M., \& Stahel, W. A. (2011). \emph{Robust statistics: The approach based on influence functions}. John Wiley \& Sons.
+
+\bibitem[\citeproctext]{ref-shi2019a}
+Shi, D., Song, H., DiStefano, C., Maydeu-Olivares, A., McDaniel, H. L., \& Jiang, Z. (2019). Evaluating factorial invariance: An interval estimation approach using bayesian structural equation modeling. \emph{Multivariate Behavioral Research}, \emph{54}(2), 224--245. \url{https://doi.org/10.1080/00273171.2018.1514484}
+
+\bibitem[\citeproctext]{ref-steiger1985}
+Steiger, J. H., Shapiro, A., \& Browne, M. W. (1985). On the multivariate asymptotic distribution of sequential {Chi}-square statistics. \emph{Psychometrika}, \emph{50}(3), 253--263. \url{https://doi.org/10.1007/BF02294104}
+
+\bibitem[\citeproctext]{ref-wilcox2011introduction}
+Wilcox, R. R. (2011). \emph{Introduction to robust estimation and hypothesis testing}. Academic press.
+
+\bibitem[\citeproctext]{ref-wilcox2017introduction}
+Wilcox, R. R. (2017). \emph{Introduction to robust estimation and hypothesis testing, \emph{4th ed.}} San Diego, CA: Academic press.
+
+\bibitem[\citeproctext]{ref-yuan1998b}
+Yuan, K.-H., \& Bentler, P. M. (1998a). 9. {Structural} {Equation} {Modeling} with {Robust} {Covariances}. \emph{Sociological Methodology}, \emph{28}(1), 363--396. \url{https://doi.org/10.1111/0081-1750.00052}
+
+\bibitem[\citeproctext]{ref-yuan1998a}
+Yuan, K.-H., \& Bentler, P. M. (1998b). Robust mean and covariance structure analysis. \emph{British Journal of Mathematical and Statistical Psychology}, \emph{51}(1), 63--88. \url{https://doi.org/10.1111/j.2044-8317.1998.tb00667.x}
+
+\bibitem[\citeproctext]{ref-yuan2008}
+Yuan, K.-H., \& Zhong, X. (2008a). 8. Outliers, leverage observations, and influential cases in factor analysis: Using robust procedures to minimize their effect. \emph{Sociological Methodology}, \emph{38}(1), 329--368.
+
+\bibitem[\citeproctext]{ref-yuan20088}
+Yuan, K.-H., \& Zhong, X. (2008b). 8. Outliers, leverage observations, and influential cases in factor analysis: Using robust procedures to minimize their effect. \emph{Sociological Methodology}, \emph{38}(1), 329--368.
+
+\bibitem[\citeproctext]{ref-yuan2013}
+Yuan, K.-H., \& Zhong, X. (2013). Robustness of fit indices to outliers and leverage observations in structural equation modeling. \emph{Psychological Methods}, \emph{18}, 121--136. \url{https://doi.org/10.1037/a0031604}
+
 \end{CSLReferences}
 
 \setlength{\parindent}{-0.5in}
