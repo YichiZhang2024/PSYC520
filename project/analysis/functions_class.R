@@ -11,7 +11,7 @@ mve_mahalanobis <- function(x){
     mve$center<-median(x)
     mve$cov <- mad(x)^2
   }
-  dep<-mahalanobis(x,mve$center,mve$cov)
+  dep <- mahalanobis(x,mve$center,mve$cov)
   dist <- sqrt(dep)
   crit <- sqrt(qchisq(0.975,p))
   chklev <- ifelse(dist>crit,1,0)
@@ -41,14 +41,17 @@ mve_mahalanobis <- function(x){
 
   mu_s = rep(0,p)
   reweighted_data <- as.data.frame(w1*as.matrix(x))
-  mu_s = colMeans(reweighted_data)
+  # mu_s = colMeans(reweighted_data)
+  mu_s = colSums(reweighted_data)/sum(w1)
 
-  diff <- as.data.frame(matrix(nrow = n, ncol = p, byrow=TRUE))
+  reweighted_data_sig <- matrix(0, nrow = p, ncol = p)
   for (i in 1:n) {
-    diff[i, ] <- x[i, ] - mu_s
+      diff_i <- matrix(x[i, ] - mu_s, ncol = 1)  # column vector
+      reweighted_data_sig <- reweighted_data_sig + w2[i] * (diff_i %*% t(diff_i))
   }
-  reweighted_data_sig <- as.data.frame(w2*as.matrix(diff))
-  sigma_s <- cov(reweighted_data_sig)
+
+  sigma_s <- reweighted_data_sig/n
+  rownames(sigma_s) <- colnames(sigma_s) <- names(mu_s)
 
   list(levid = levid, levid.n = length(levid), weighted.mean = mu_s, weighted.covariance = sigma_s)
 }
@@ -95,14 +98,16 @@ mcd_mahalanobis <- function(x){
 
   mu_s = rep(0,p)
   reweighted_data <- as.data.frame(w1*as.matrix(x))
-  mu_s = colMeans(reweighted_data)
+  mu_s = colSums(reweighted_data)/sum(w1)
 
-  diff <- as.data.frame(matrix(nrow = n, ncol = p, byrow=TRUE))
+  reweighted_data_sig <- matrix(0, nrow = p, ncol = p)
   for (i in 1:n) {
-    diff[i, ] <- x[i, ] - mu_s
+      diff_i <- matrix(x[i, ] - mu_s, ncol = 1)  # column vector
+      reweighted_data_sig <- reweighted_data_sig + w2[i] * (diff_i %*% t(diff_i))
   }
-  reweighted_data_sig <- as.data.frame(w2*as.matrix(diff))
-  sigma_s <- cov(reweighted_data_sig)
+
+  sigma_s <- reweighted_data_sig/n
+  rownames(sigma_s) <- colnames(sigma_s) <- names(mu_s)
 
   list(levid = levid, levid.n = length(levid), weighted.mean = mu_s, weighted.covariance = sigma_s)
 }
@@ -178,14 +183,17 @@ projection_mve <- function(x){
 
   mu_s = rep(0,p)
   reweighted_data <- as.data.frame(w1*as.matrix(x))
-  mu_s = colMeans(reweighted_data)
+  mu_s = colSums(reweighted_data)/sum(w1)
 
-  diff <- as.data.frame(matrix(nrow = n, ncol = p, byrow=TRUE))
+  reweighted_data_sig <- matrix(0, nrow = p, ncol = p)
   for (i in 1:n) {
-    diff[i, ] <- x[i, ] - mu_s
+      diff_i <- matrix(x[i, ] - mu_s, ncol = 1)  # column vector
+      reweighted_data_sig <- reweighted_data_sig + w2[i] * (diff_i %*% t(diff_i))
   }
-  reweighted_data_sig <- as.data.frame(w2*as.matrix(diff))
-  sigma_s <- cov(reweighted_data_sig)
+
+  sigma_s <- reweighted_data_sig/n
+  rownames(sigma_s) <- colnames(sigma_s) <- names(mu_s)
+
   list(levid = levid, levid.n = length(levid), weighted.mean = mu_s, weighted.covariance = sigma_s)
 }
 #projection_mve(data2[,1:3])
@@ -259,14 +267,17 @@ projection_mcd <- function(x){
 
   mu_s = rep(0,p)
   reweighted_data <- as.data.frame(w1*as.matrix(x))
-  mu_s = colMeans(reweighted_data)
+  mu_s = colSums(reweighted_data)/sum(w1)
 
-  diff <- as.data.frame(matrix(nrow = n, ncol = p, byrow=TRUE))
+  reweighted_data_sig <- matrix(0, nrow = p, ncol = p)
   for (i in 1:n) {
-    diff[i, ] <- x[i, ] - mu_s
+      diff_i <- matrix(x[i, ] - mu_s, ncol = 1)  # column vector
+      reweighted_data_sig <- reweighted_data_sig + w2[i] * (diff_i %*% t(diff_i))
   }
-  reweighted_data_sig <- as.data.frame(w2*as.matrix(diff))
-  sigma_s <- cov(reweighted_data_sig)
+
+  sigma_s <- reweighted_data_sig/n
+  rownames(sigma_s) <- colnames(sigma_s) <- names(mu_s)
+
   list(levid = levid, levid.n = length(levid), weighted.mean = mu_s, weighted.covariance = sigma_s)
 }
 
@@ -302,14 +313,16 @@ outpro_mve <- function(x){
 
   mu_s = rep(0,p)
   reweighted_data <- as.data.frame(w1*as.matrix(x))
-  mu_s = colMeans(reweighted_data)
+  mu_s = colSums(reweighted_data)/sum(w1)
 
-  diff <- as.data.frame(matrix(nrow = n, ncol = p, byrow=TRUE))
+  reweighted_data_sig <- matrix(0, nrow = p, ncol = p)
   for (i in 1:n) {
-    diff[i, ] <- x[i, ] - mu_s
+      diff_i <- matrix(x[i, ] - mu_s, ncol = 1)  # column vector
+      reweighted_data_sig <- reweighted_data_sig + w2[i] * (diff_i %*% t(diff_i))
   }
-  reweighted_data_sig <- as.data.frame(w2*as.matrix(diff))
-  sigma_s <- cov(reweighted_data_sig)
+
+  sigma_s <- reweighted_data_sig/n
+  rownames(sigma_s) <- colnames(sigma_s) <- names(mu_s)
 
   list(levid = levid, levid.n = length(levid), weighted.mean = mu_s, weighted.covariance = sigma_s)
 }
@@ -346,68 +359,89 @@ outpro_mcd <- function(x){
 
   mu_s = rep(0,p)
   reweighted_data <- as.data.frame(w1*as.matrix(x))
-  mu_s = colMeans(reweighted_data)
+  mu_s = colSums(reweighted_data)/sum(w1)
 
-  diff <- as.data.frame(matrix(nrow = n, ncol = p, byrow=TRUE))
+  reweighted_data_sig <- matrix(0, nrow = p, ncol = p)
   for (i in 1:n) {
-    diff[i, ] <- x[i, ] - mu_s
+      diff_i <- matrix(x[i, ] - mu_s, ncol = 1)  # column vector
+      reweighted_data_sig <- reweighted_data_sig + w2[i] * (diff_i %*% t(diff_i))
   }
-  reweighted_data_sig <- as.data.frame(w2*as.matrix(diff))
-  sigma_s <- cov(reweighted_data_sig)
+
+  sigma_s <- reweighted_data_sig/n
+  rownames(sigma_s) <- colnames(sigma_s) <- names(mu_s)
 
   list(levid = levid, levid.n = length(levid), weighted.mean = mu_s, weighted.covariance = sigma_s)
 }
 
+## helper function extract parameter estimates
+ext_est <- function(mod, rob_est, data) {
+    fit <- cfa(
+        mod,
+        sample.cov  = rob_est$cov_reweighted,
+        sample.mean = rob_est$mu_reweighted,
+        sample.nobs = nrow(data),
+        std.lv      = TRUE
+    )
+    list(
+        lambda = t(lavInspect(fit, "est")$lambda),
+        nu     = t(lavInspect(fit, "est")$nu)
+    )
+}
 ## robust alignment function
-robalign <- function(method, data_g1, data_g2, mod, group_name){
+robalign <- function(method, data, mod, group_names){
+    grouped_data <- split(data[, !names(data) %in% "group"], data$group)
+    grouped_data <- grouped_data[group_names]
     if(method == "mve_mah"){
-        rob_est_g1 <- mve_mahalanobis(x = data_g1)
-        rob_est_g2 <- mve_mahalanobis(x = data_g2)
+        rob_estimates <- lapply(grouped_data, function(grouped_data){
+            outlier_mahalanobis(grouped_data[,3:5], estimator = "MVE")
+        })
     }else if(method == "mcd_mah"){
-        rob_est_g1 <- mcd_mahalanobis(x = data_g1)
-        rob_est_g2 <- mcd_mahalanobis(x = data_g2)
+        rob_estimates <- lapply(grouped_data, function(grouped_data){
+            outlier_mahalanobis(grouped_data[,3:5], estimator = "MCD")
+        })
     }else if(method == "pro_mve"){
-        rob_est_g1 <- projection_mve(x = data_g1)
-        rob_est_g2 <- projection_mve(x = data_g2)
+        rob_estimates <- lapply(grouped_data, function(grouped_data){
+            outlier_projection(X = grouped_data[,3:5], cop = 4)
+        })
     }else if(method == "pro_mcd"){
-        rob_est_g1 <- projection_mcd(x = data_g1)
-        rob_est_g2 <- projection_mcd(x = data_g2)
-    }else if(method == "outpro_mve"){
-        rob_est_g1 <- outpro_mve(x = data_g1)
-        rob_est_g2 <- outpro_mve(x = data_g2)
-    }else if(method == "outpro_mcd"){
-        rob_est_g1 <- outpro_mcd(x = data_g1)
-        rob_est_g2 <- outpro_mcd(x = data_g2)
+        rob_estimates <- lapply(grouped_data, function(grouped_data){
+            outlier_projection(X = grouped_data[,3:5], cop = 2)
+        })
+    # }else if(method == "outpro_mve"){
+    #     rob_estimates <- lapply(grouped_data, function(grouped_data){
+    #         outpro_mcd(x = grouped_data[,3:5], cov = 4)
+    #     })
+    # }else if(method == "outpro_mcd"){
+    #     rob_estimates <- lapply(grouped_data, function(grouped_data){
+    #         outpro_mcd(x = grouped_data[,3:5], cov = 2)
+    #     })
     }
 
-    mod_fit_g1 <- cfa(mod,
-                      sample.cov = rob_est_g1$weighted.covariance,
-                      sample.mean = rob_est_g1$weighted.mean,
-                      sample.nobs = nrow(data_g1),
-                      std.lv = TRUE)
-    mod_fit_g2 <- cfa(mod,
-                      sample.cov = rob_est_g2$weighted.covariance,
-                      sample.mean = rob_est_g2$weighted.mean,
-                      sample.nobs = nrow(data_g2),
-                      std.lv = TRUE)
-    ld <- rbind(t(lavInspect(mod_fit_g1, what = "est")$lambda),
-                t(lavInspect(mod_fit_g2, what = "est")$lambda))
-    rownames(ld) <- group_name
-    nu <-  rbind(t(lavInspect(mod_fit_g1, what = "est")$nu),
-                 t(lavInspect(mod_fit_g2, what = "est")$nu))
-    rownames(nu) <- group_name
+    fits <- list(
+        ext_est(mod, rob_estimates[[1]], grouped_data[[1]]),
+        ext_est(mod, rob_estimates[[2]], grouped_data[[2]]),
+        ext_est(mod, rob_estimates[[3]], grouped_data[[3]]),
+        ext_est(mod, rob_estimates[[4]], grouped_data[[4]])
+
+    )
+    # Combine results
+    ld <- do.call(rbind, lapply(fits, `[[`, "lambda"))
+    nu <- do.call(rbind, lapply(fits, `[[`, "nu"))
+
+    # Assign row names
+    rownames(ld) <- rownames(nu) <- names(grouped_data)
+
     res <- invariance.alignment(
         lambda = ld,
         nu = nu,
-        wgt = matrix(sqrt(c(nrow(data_g1), nrow(data_g2))), nrow = 2, ncol = 3)
+        wgt = matrix(sqrt(sapply(grouped_data, nrow)), nrow = 4, ncol = 3)
     )
-    list(align_res = res, coef_g1 = coef(mod_fit_g1), coef_g2 = coef(mod_fit_g2),
-         rob_est_g1 = rob_est_g1, rob_est_g2 = rob_est_g2)
+    list(align_res = res, rob_est= rob_estimates)
 }
 ## test
-mod2 <- "f1 =~ V1 + V2 + V3"
-# res_mve <- robalign(method = "pro_mve", data_g1 = data2_ma[,1:3], data_g2 = data2_fe[,1:3],
-#                     mod = mod2, group_name = c("male", "female"))
+# group_names <- c("female_Pasteur", "Male_Pasteur", "female_Grant-White", "Male_Grant-White")
+# res <- robalign(method = "mve_mah", data = data2, mod, group_names)
+# res2 <- robalign(method = "pro_mve", data = data2, mod, group_names)
 
 alignment <- function(model_fit, group_name){
     ld_dat <- rbind(t(lavInspect(model_fit,  what = "est")$`1`$lambda),

@@ -1,0 +1,385 @@
+---
+title: "RAO Illustrative Example"
+author: "Yichi Zhang"
+date: "2025-06-20"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+library(lavaan)
+library(dplyr)
+library(modelsummary)
+library(matlib)
+library(dplyr)
+library(foreach)
+library(DetMCD)
+library(sirt)
+library(foreach)
+library(psych)
+library(kableExtra)
+source(here::here("project/analysis/functions_class.R"))
+source(here::here("project/analysis/Rallfun-v45.txt"))
+source(here::here("project/analysis/md_outlier.R"))
+```
+
+## Original dataset
+
+Import the HolzingerSwineford1939 data set and create grouping variable `group` using `sex` and `school`, resulting in four groups: 
+
+- female_Pasteur
+- Male_Pasteur 
+- female_Grant-White     
+- Male_Grant-White       
+
+```{r}
+## female = 1, male = 2
+data <- HolzingerSwineford1939[, c("sex", "school", "x1", "x2", "x3")]
+rownames(data) <- 1:nrow(data)
+## relabel variable
+data$sex <- factor(data$sex, levels = c(1, 2), labels = c("female", "Male"))
+## create grouping variable using sex and school
+data$group <- paste(data$sex, data$school, sep = "_")
+```
+
+Focus on one factor underlying the first three variables (`x1`, `x2`, `x3`). Fit a multi-group CFA model.
+
+```{r}
+## focus on one factor first
+mod <- 'f1 =~ x1 + x2 + x3'
+## fit a one factor multiple group cfa model
+fit_dat1 <- cfa(mod, data = data,
+                group = "group",
+                estimator = "MLM",
+                std.lv = TRUE)
+summary(fit_dat1, fit.measures = TRUE)
+```
+
+Extract the loading and intercept matrix and conduct alignment. 
+
+```{r}
+## builtin function from lavaan to extract lambda matrix
+estimates_list <- lavaan::inspect(fit_dat1, what = "est")
+lambda_matrix <- t(sapply(estimates_list, function(x) as.numeric(x$lambda[, 1])))
+colnames(lambda_matrix) <- rownames(estimates_list[[1]]$lambda)
+rownames(lambda_matrix) <- names(estimates_list)
+## extract intercepts 
+nu_matrix <- t(sapply(estimates_list, function(x) as.numeric(x$nu[, 1])))
+colnames(nu_matrix) <- rownames(estimates_list[[1]]$nu)
+rownames(nu_matrix) <- names(estimates_list)
+## conduct alignment on the original dataset
+align_dat1 <- invariance.alignment(
+        lambda = lambda_matrix,
+        nu = nu_matrix,
+        wgt = matrix(sqrt(summary(fit_dat1)[[3]]$nobs), nrow = 4, ncol = 3)
+    )
+```
+
+## Dataset 2
+
+Generate 3 leverage points per group (12 in total). Replace the last 3 observations of each group with leverage points ($4\%$ of the 300 observations). 
+
+<!-- ```{r} -->
+<!-- # Data set 2 -- Good leverage points 1111111111 -->
+<!-- set.seed(1111111111) -->
+<!-- x = rnorm(10, mean = 1, sd = 1) -->
+<!-- h = exp(x) -->
+<!-- bartlett_predict <- lavPredict(fit_mod, method = "Bartlett") -->
+<!-- ## generate 10 leverage points -->
+<!-- data2_new_ob <- foreach(i = 292:301, j = 1:10) %do%{ -->
+<!--     data[i, 3:5] + h[[j]]*Lambda%*%bartlett_predict[i, ] -->
+<!-- } -->
+<!-- data2_new_ob <- as.data.frame(do.call(rbind, lapply(data2_new_ob, unlist))) -->
+<!-- ``` -->
+
+```{r}
+# data 2 is the modified dataset
+data2 <- data
+# Extract estimates and group labels
+estimates_list <- lavaan::inspect(fit_dat1, what = "est")
+group_labels <- data$group
+# get predicted factor score for each observation
+bart_scores_list <- lavPredict(fit_dat1, method = "Bartlett")
+
+# Store results
+new_obs_list <- list()
+
+for (grp in unique(group_labels)) {
+  Lambda <- estimates_list[[grp]]$lambda
+  # use Yuan & Zhong's method, h = exp(x)
+  set.seed(5109678)
+  x <- rnorm(3)
+  h <- exp(x)
+# indices for each group
+  grp_idx <- which(group_labels == grp)
+  n_grp <- length(grp_idx)
+  idx <- grp_idx[(n_grp - 2):n_grp]
+# predicted factor score for each group
+  bart_scores <- bart_scores_list[[grp]]
+# generate leverage points
+  data2_new_ob <- foreach(i = seq_along(idx), j = 1:3, .combine = rbind) %do% {
+    data[idx[i], 3:5] + h[[j]] * Lambda %*% bart_scores[i, ]
+  }
+
+  data2_new_ob <- as.data.frame(do.call(rbind, lapply(data2_new_ob, unlist)))
+  colnames(data2_new_ob) <- colnames(data)[3:5]
+  
+  new_obs_list[[grp]] <- data2_new_ob
+  # Print idx, original, and replaced observations
+  cat("\nIndices:\n")
+  print(idx)
+  cat("\nGroup:", grp, "\n")
+  print("Original observations:")
+  print(data[idx, 3:5])
+  print("Replaced observations:")
+  print(data2_new_ob)
+  # Replace back into data
+  data2[idx, 3:5] <- data2_new_ob
+}
+```
+The Mahalanobis distances of the original 12 observations ranged from 0.06 to 4.73, while those of the modified observations ranged from 4.51 to 78.77.
+
+```{r}
+lev_ind <- c(151:156, 295, 297:301)
+## mahalanobis distance for the original 12 observations
+psych::describe(mahalanobis(data[lev_ind,3:5],
+                            center = colMeans(data[,3:5]),
+                            cov = cov(data[,3:5])))
+## mahalanobis distance for the leverage points
+psych::describe(mahalanobis(data2[lev_ind,3:5],
+                            center = colMeans(data2[,3:5]),
+                            cov = cov(data2[,3:5])))
+```
+The leverage points are `r lev_ind`.
+
+Fit a multi-group CFA model with the modified dataset
+
+```{r}
+## fit a one factor multiple group cfa model
+fit_dat2 <- cfa(mod, data = data2,
+                group = "group",
+                estimator = "MLM",
+                std.lv = TRUE)
+summary(fit_dat2, fit.measures = TRUE)
+```
+
+Conduct alignment 
+
+```{r}
+## builtin function from lavaan to extract lambda matrix
+estimates_list_dat2 <- lavaan::inspect(fit_dat2, what = "est")
+lambda_matrix_dat2 <- t(sapply(estimates_list_dat2, function(x) as.numeric(x$lambda[, 1])))
+colnames(lambda_matrix_dat2) <- rownames(estimates_list_dat2[[1]]$lambda)
+rownames(lambda_matrix_dat2) <- names(estimates_list_dat2)
+## extract intercepts 
+nu_matrix_dat2 <- t(sapply(estimates_list_dat2, function(x) as.numeric(x$nu[, 1])))
+colnames(nu_matrix_dat2) <- rownames(estimates_list_dat2[[1]]$nu)
+rownames(nu_matrix_dat2) <- names(estimates_list_dat2)
+## conduct alignment on the original dataset
+align_dat2 <- invariance.alignment(
+        lambda = lambda_matrix_dat2,
+        nu = nu_matrix_dat2,
+        wgt = matrix(sqrt(summary(fit_dat2)[[3]]$nobs), nrow = 4, ncol = 3)
+    )
+```
+
+## Robust Alignment Method
+
+### Step 1: Getting the robust covariance matrix and mean vector 
+
+Tried six methods:
+
+- Mahalanobis Distance with MVE
+- Mahalanobis Distance with MCD
+- Projection Distance with MVE (random)
+- Projection Distance with MCD (random)
+- Projection Distance with MVE (exhaustive)
+- Projection Distance with MCD (exhaustive)
+
+Among these methods, Mahalanobis Distance with MCD and Mahalanobis Distance with MVE performed the best in identifying the leverage points (11/12), followed by Projection with MVE (exhaustive search), and Projection with MCD (exhaustive search).
+
+```{r, echo=FALSE}
+## MVE identified 11/12 leverage points
+mve_orig <- outlier_mahalanobis(data[,3:5], estimator = "MVE")
+cat("leverage points identified by Mahalanobis Distance with MVE with original dataset:\n")
+print(unname(mve_orig$out.id))
+mve_dat2 <- outlier_mahalanobis(data2[,3:5], estimator = "MVE")
+cat("leverage points identified by Mahalanobis Distance with MVE with modified dataset:\n")
+print(unname(mve_dat2$out.id))
+cat("Number of identified leverage points:\n")
+print(sum(mve_dat2$out.id %in%lev_ind))
+## MCD identified 11/12 leverage points
+mcd_orig <- outlier_mahalanobis(data[,3:5], estimator = "MCD")
+cat("\nleverage points identified by Mahalanobis Distance with MCD with original dataset:\n")
+print(unname(mcd_orig$out.id))
+mcd_dat2 <-outlier_mahalanobis(data2[,3:5], estimator = "MCD")
+cat("leverage points identified by Mahalanobis Distance with MCD with modified dataset:\n")
+print(unname(mcd_dat2$out.id))
+cat("Number of identified leverage points:\n")
+print(sum(mcd_dat2$out.id %in%lev_ind))
+```
+
+<!-- ```{r} -->
+<!-- ## Projection with MVE (random point), identified 6/12 leverage points but classified too many leverage points -->
+<!-- pjmver_orig <- outlier_projection(X = data[,3:5], cop = 4) -->
+<!-- pjmver_dat2 <- outlier_projection(X = data2[,3:5], cop = 4) -->
+<!-- ## Projection with MCD (random point), identified 6/12 leverage points but classified too many leverage points -->
+<!-- pjmcdr_orig <- outlier_projection(X = data[,3:5], cop = 2) -->
+<!-- pjmcdr_dat2 <- outlier_projection(X = data2[,3:5], cop = 2) -->
+<!-- ``` -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- cat("leverage points identified by projection method with MVE random point approach, original dataset:\n") -->
+<!-- print(sort(pjmver_orig$out.id)) -->
+<!-- cat("leverage points identified by projection method with MVE random point approach, modified dataset:\n") -->
+<!-- print(sort(pjmver_dat2$out.id)) -->
+<!-- cat("Number of identified leverage points:\n") -->
+<!-- print(sum(pjmver_dat2$out.id %in%lev_ind)) -->
+<!-- cat("\nleverage points identified by projection method with MCD random point approach, original dataset:\n") -->
+<!-- print(sort(pjmcdr_orig$out.id)) -->
+<!-- cat("leverage points identified by projection method with MCD random point approach, modified dataset:\n") -->
+<!-- print(sort(pjmcdr_dat2$out.id)) -->
+<!-- cat("Number of identified leverage points:\n") -->
+<!-- print(sum(pjmcdr_dat2$out.id %in%lev_ind)) -->
+<!-- ``` -->
+
+```{r}
+## Projection with MVE (exhaustive search), identified 10/12 leverage points
+pjmvee_orig <- outlier_projection(X = data[,3:5], cov = 4)
+pjmvee_dat2 <- outlier_projection(X = data2[,3:5], cov = 4)
+## Projection with MCD (exhaustive search), identified 10/12 leverage points
+pjmcde_orig <- outlier_projection(X = data[,3:5], cov = 2)
+pjmcde_dat2 <- outlier_projection(X = data2[,3:5], cov = 2)
+```
+
+
+```{r, echo=FALSE}
+cat("leverage points identified by projection method with MVE exhaustive approach, original dataset:\n")
+print(sort(pjmvee_orig$out.id))
+cat("leverage points identified by projection method with MVE exhaustive approach, modified dataset:\n")
+print(sort(pjmvee_dat2$out.id))
+cat("Number of identified leverage points:\n")
+print(sum(pjmvee_dat2$out.id %in%lev_ind))
+cat("\nleverage points identified by projection method with MCD exhaustive approach, original dataset:\n")
+print(sort(pjmcde_orig$out.id))
+cat("leverage points identified by projection method with MCD exhaustive approach, modified dataset:\n")
+print(sort(pjmcde_dat2$out.id))
+cat("Number of identified leverage points:\n")
+print(sum(pjmcde_dat2$out.id %in%lev_ind))
+```
+### Step 2: Applying Alignment on the Robust Covariance Matrix
+
+```{r}
+group_names <- c("female_Pasteur", "Male_Pasteur", "female_Grant-White", "Male_Grant-White")
+## mve results
+res_mve <- robalign(method = "mve_mah", data = data2, mod, group_names)
+## mcd results
+res_mcd <- robalign(method = "mcd_mah", data = data2, mod, group_names)
+# ## projection with mve (random point)
+# res_pjmver <- robalign(method = "pro_mve", data = data2, mod, group_names)
+# ## Projection with mcd (random point)
+# res_pjmcdr <- robalign(method = "pro_mcd", data = data2, mod, group_names)
+## projection with mve (exhaustive search)
+res_pjmvee <- robalign(method = "pro_mve", data = data2, mod, group_names)
+## projection with mcd (exhaustive search)
+res_pjmcde <- robalign(method = "pro_mcd", data = data2, mod, group_names)
+```
+
+The Mahalanobis Distance with MVE and MCD performs slightly better than the projection method in recovering factor means and variances, and provides estimates of loadings and intercepts that are closer to those from the original dataset.
+
+```{r, echo=FALSE}
+## factor means and factor variances
+m_tab <- rbind(align_dat1$pars[,1],
+               align_dat2$pars[,1],
+               res_mve$align_res$pars[,1],
+               res_mcd$align_res$pars[,1],
+               # res_pjmver$align_res$pars[,1],
+               # res_pjmcdr$align_res$pars[,1],
+               res_pjmvee$align_res$pars[,1],
+               res_pjmcde$align_res$pars[,1])
+var_tab <- rbind(align_dat1$pars[,2],
+               align_dat2$pars[,2],
+               res_mve$align_res$pars[,2],
+               res_mcd$align_res$pars[,2],
+               # res_pjmver$align_res$pars[,2],
+               # res_pjmcdr$align_res$pars[,2],
+               res_pjmvee$align_res$pars[,2],
+               res_pjmcde$align_res$pars[,2])
+# Compute Cohen's f for each row
+f_values <- numeric(nrow(m_tab))
+
+for (i in 1:nrow(m_tab)) {
+  means <- m_tab[i, ]
+  vars <- var_tab[i, ]
+
+  grand_mean <- mean(means)
+  between_var <- mean((means - grand_mean)^2)
+  pooled_var <- mean(vars)
+
+  f_values[i] <- sqrt(between_var / pooled_var)
+}
+m_var_tab <- cbind(m_tab, var_tab, f_values)
+m_var_tab <- apply(m_var_tab, 2, round, 3)
+colnames(m_var_tab) <- c(rep(c("Female Pasteur", "Male Pasteur", 
+                             "Female Grant-White", "Male Grant-White"),2), "Value")
+rownames(m_var_tab) <- c("Original Data",
+                         "Modified Data",
+                         "MD with MVE",
+                         "MD with MCD",
+                         # "PMVE (random)",
+                         # "PMCD (random)",
+                         "PMVE (exhaustive)",
+                         "PMCD (exhaustive)")
+m_var_tab %>%
+  kbl(booktabs = TRUE, caption = "Comparison of Factor Means, Variances from robust alignment, and Cohen's f") %>%
+  kable_styling(bootstrap_options = "striped", full_width = TRUE, font_size = 7)%>%
+  add_header_above(c(" ", "Factor Mean From Robust Alignment" = 4, "Factor Variance From Robust Alignment" = 4, "Cohen's f"))
+```
+
+```{r, echo=FALSE}
+## factor loadings
+ld_tab <- cbind(align_dat1$lambda.aligned, align_dat2$lambda.aligned,
+                res_mve$align_res$lambda.aligned, res_mcd$align_res$lambda.aligned,
+                # res_pjmver$align_res$lambda.aligned, res_pjmcdr$align_res$lambda.aligned,
+                res_pjmvee$align_res$lambda.aligned, res_pjmcde$align_res$lambda.aligned)
+rownames(ld_tab) <- c("Female Pasteur", "Male Pasteur", 
+                             "Female Grant-White", "Male Grant-White")
+colnames(ld_tab) <- rep(paste0("x", 1:3), 6)
+ld_tab <- apply(ld_tab, 2, round, 2)
+## intercepts
+int_tab <- cbind(align_dat1$nu.aligned, align_dat2$nu.aligned,
+                 res_mve$align_res$nu.aligned, res_mcd$align_res$nu.aligned,
+                 # res_pjmver$align_res$nu.aligned, res_pjmcdr$align_res$nu.aligned,
+                 res_pjmvee$align_res$nu.aligned, res_pjmcde$align_res$nu.aligned)
+rownames(int_tab) <- c("Female Pasteur", "Male Pasteur", 
+                             "Female Grant-White", "Male Grant-White")
+colnames(int_tab) <- rep(paste0("x", 1:3), 6)
+int_tab <- apply(int_tab, 2, round, 2)
+ld_tab %>%
+  kbl(booktabs = TRUE, caption = "Comparison of aligned factor loadings") %>%
+  kable_styling(bootstrap_options = "striped", full_width = TRUE, font_size = 6)%>%
+  add_header_above(c(" ", "Original Data" = 3,
+                         "Modified Data"= 3,
+                         "MD with MVE"= 3,
+                         "MD with MCD"= 3,
+                         # "PMVE (random)"= 3,
+                         # "PMCD (random)"= 3,
+                         "PMVE (exhaustive)"= 3,
+                         "PMCD (exhaustive)"= 3))
+int_tab %>%
+  kbl(booktabs = TRUE, caption = "Comparison of aligned intercepts") %>%
+  kable_styling(bootstrap_options = "striped", full_width = TRUE, font_size = 6)%>%
+  add_header_above(c(" ", "Original Data" = 3,
+                         "Modified Data"= 3,
+                         "MD with MVE"= 3,
+                         "MD with MCD"= 3,
+                         # "PMVE (random)"= 3,
+                         # "PMCD (random)"= 3,
+                         "PMVE (exhaustive)"= 3,
+                         "PMCD (exhaustive)"= 3))
+```
+
+
